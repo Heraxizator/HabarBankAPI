@@ -1,5 +1,4 @@
-
-using HabarBankAPI.Data;
+using HabarBankAPI.Web.Handlers;
 
 namespace HabarBankAPI
 {
@@ -33,9 +32,9 @@ namespace HabarBankAPI
 
             _ = app.MapControllers();
 
-            AppDbInitializer appDbInitializer = new();
+            //AppDbInitializer appDbInitializer = new();
 
-            appDbInitializer.Init();
+            //appDbInitializer.Init();
 
             app.Run();
         }
