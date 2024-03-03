@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HabarBankAPI.Web.Controllers
 {
-    [Route("api/users/")]
+    [Route("api/transfers/")]
     [ApiController]
     public class SendingController : ControllerBase
     {
@@ -32,15 +32,15 @@ namespace HabarBankAPI.Web.Controllers
         }
 
 
-        [HttpGet("{user-id}/cards/{card-id}/sendings/{sending-id}")]
-        public async Task<ActionResult<IList<SendingDTO>>> GetTransferByTransferId(int sending_id)
+        [HttpGet("{transfer-id}")]
+        public async Task<ActionResult<IList<SendingDTO>>> GetTransferByTransferId(int transfer_id)
         {
-            SendingDTO sendingDTO = await this._service.GetTransferByTransferId(sending_id);
+            SendingDTO sendingDTO = await this._service.GetTransferByTransferId(transfer_id);
 
             return Ok(sendingDTO);
         }
 
-        [HttpGet("{user-id}/cards/{card-id}/sendings")]
+        [HttpGet]
         public async Task<ActionResult<IList<SendingDTO>>> GetTransfersByEntityId(int card_id)
         {
             IList<SendingDTO> sendingDTOs = await this._service.GetTransfersBySubstanceId(card_id);
@@ -48,7 +48,7 @@ namespace HabarBankAPI.Web.Controllers
             return Ok(sendingDTOs);
         }
 
-        [HttpPost("{user-id}/cards/{card-id}/sendings/")]
+        [HttpPost]
         public async Task<ActionResult<SendingDTO>> AddNewTransfer([FromBody] SendingDTO sendingDTO)
         {
             await this._service.CreateTransfer(sendingDTO);
@@ -60,7 +60,7 @@ namespace HabarBankAPI.Web.Controllers
             return sending;
         }
 
-        [HttpPut("{user-id}/cards/{card-id}/sendings/")]
+        [HttpPut]
         public async Task<ActionResult> SetTransferEnabled(int sending_id, bool enabled)
         {
             await this._service.SetTransferStatus(sending_id, enabled);

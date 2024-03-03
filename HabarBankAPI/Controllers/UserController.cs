@@ -35,7 +35,7 @@ namespace HabarBankAPI.Controllers
             this._service = new UserService(_mapper, _accounts_repository, _levels_repository);
         }
 
-        [HttpGet("count")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDTO>>> TakeUsers(int count)
         {
             IList<UserDTO> userDTOs = await _service.GetAccountsList(count);
@@ -43,7 +43,7 @@ namespace HabarBankAPI.Controllers
             return Ok(userDTOs);
         }
 
-        [HttpGet]
+        [HttpGet("auth")]
         public async Task<ActionResult<UserDTO>> GetUserByLoginAndPassword(string login, string password)
         {
             UserDTO userDTOs = await _service.GetAuthTokenByData(login, password);

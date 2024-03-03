@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HabarBankAPI.Application", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HabarBankAPI.Infrastructure", "HabarBankAPI.Infrastructure\HabarBankAPI.Infrastructure.csproj", "{439F0FD3-57E7-48C9-8D35-90265C371F6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HabarBankAPI.UnitTests", "HabarBankAPI.UnitTests\HabarBankAPI.UnitTests.csproj", "{14FD61BC-22EA-4626-B6E9-CF27D3C73E09}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HabarBankAPI.UnitTests", "HabarBankAPI.UnitTests\HabarBankAPI.UnitTests.csproj", "{14FD61BC-22EA-4626-B6E9-CF27D3C73E09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

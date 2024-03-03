@@ -10,7 +10,7 @@ using HabarBankAPI.Domain.Entities;
 
 namespace HabarBankAPI.Web.Controllers
 {
-    [Route("api/users/")]
+    [Route("api/cards/")]
     [ApiController]
     public class CardController : ControllerBase
     {
@@ -44,7 +44,7 @@ namespace HabarBankAPI.Web.Controllers
                 _card_mapperA, _card_mapperB, _user_mapper, _cards_repository, _users_repository, _entities_repository);
         }
 
-        [HttpGet("{user-id}/cards")]
+        [HttpGet]
         public async Task<ActionResult<IList<CardDTO>>> TakeCards(int user_id)
         {
             IList<CardDTO> cardDTOs = await this._service.GetCardsByUserId(user_id);
@@ -52,15 +52,15 @@ namespace HabarBankAPI.Web.Controllers
             return Ok(cardDTOs);
         }
 
-        [HttpGet("{user-id}/cards/{card-id}")]
-        public async Task<ActionResult<CardDTO>> GetCardById(int user_id, int card_id)
+        [HttpGet("{card-id}")]
+        public async Task<ActionResult<CardDTO>> GetCardById(int card_id)
         {
             CardDTO cardDTO = await this._service.GetCardData(card_id);
 
             return Ok(cardDTO);
         }
 
-        [HttpPost("{user_id}/cards")]
+        [HttpPost]
         public async Task<ActionResult<CardDTO>> AddNewCard(int user_id, [FromBody] CardDTO cardDTO)
         {
             await this._service.CreateCard(user_id, cardDTO);
@@ -72,8 +72,8 @@ namespace HabarBankAPI.Web.Controllers
             return card;
         }
 
-        [HttpPut("{user-id}/cards")]
-        public async Task<ActionResult> EditCardEnabled(int user_id, int card_id, bool enabled)
+        [HttpPut]
+        public async Task<ActionResult> EditCardEnabled(int card_id, bool enabled)
         {
             await this._service.EditCardEnabled(card_id, enabled);
 
