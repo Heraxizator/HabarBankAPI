@@ -38,7 +38,7 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<AccountLevelDTO>> GetAccountLevelById(int id)
+        public async Task<ActionResult<AccountLevelDTO>> GetAccountLevelById(long id)
         {
             AccountLevelDTO accountLevelDTO = await this._service.GetAccountLevelById(id);
 
@@ -50,7 +50,7 @@ namespace HabarBankAPI.Web.Controllers
         {
             await this._service.CreateNewAccountLevel(accountLevelDTO);
 
-            int accountLevelId = (await this._service.GetAllAccountLevels()).Max(x => x.AccountLevelId);
+            long accountLevelId = (await this._service.GetAllAccountLevels()).Max(x => x.AccountLevelId);
 
             AccountLevelDTO accountLevel = await this._service.GetAccountLevelById(accountLevelId);
 
@@ -58,7 +58,7 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> EditAccountLevelEnabled(int id, bool enabled)
+        public async Task<ActionResult> EditAccountLevelEnabled(long id, bool enabled)
         {
             await this._service.SetAccountLevelEnabled(id, enabled);
 

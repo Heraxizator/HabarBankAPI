@@ -2,7 +2,7 @@
 using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Card;
 using HabarBankAPI.Domain.Exceptions.Card;
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ namespace HabarBankAPI.Application.Services
             return cardTypeDTOs;
         }
 
-        public async Task<CardTypeDTO> GetCardTypeById(int id)
+        public async Task<CardTypeDTO> GetCardTypeById(long id)
         {
             CardType? cardType = await Task.Run(
                 () => this._repository.Get(x => x.CardTypeId == id && x.Enabled is true).FirstOrDefault());
@@ -51,7 +51,7 @@ namespace HabarBankAPI.Application.Services
             return cardTypeDTO;
         }
 
-        public async Task SetCardTypeEnabled(int id, bool enabled)
+        public async Task SetCardTypeEnabled(long id, bool enabled)
         {
             CardType? cardType = await Task.Run(
                 () => this._repository.Get(x => x.CardTypeId == id && x.Enabled is true).FirstOrDefault());

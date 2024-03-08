@@ -7,6 +7,9 @@ using HabarBankAPI.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Card;
+using HabarBankAPI.Domain.Entities.Substance;
+using HabarBankAPI.Application.DTO.Account;
 
 namespace HabarBankAPI.Web.Controllers
 {
@@ -32,7 +35,7 @@ namespace HabarBankAPI.Web.Controllers
 
             this._card_mapperB = AbstractMapper<Card, CardDTO>.MapperA;
 
-            this._user_mapper = AbstractMapper<UserDTO, Account>.MapperA;
+            this._user_mapper = AbstractMapper<AccountDTO, Account>.MapperA;
 
             this._cards_repository = new GenericRepository<Card>(context);
 
@@ -45,7 +48,7 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IList<CardDTO>>> TakeCards(int user_id)
+        public async Task<ActionResult<IList<CardDTO>>> TakeCards(long user_id)
         {
             IList<CardDTO> cardDTOs = await this._service.GetCardsByUserId(user_id);
 
@@ -53,7 +56,7 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpGet("{card-id}")]
-        public async Task<ActionResult<CardDTO>> GetCardById(int card_id)
+        public async Task<ActionResult<CardDTO>> GetCardById(long card_id)
         {
             CardDTO cardDTO = await this._service.GetCardData(card_id);
 
@@ -61,11 +64,11 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<CardDTO>> AddNewCard(int user_id, [FromBody] CardDTO cardDTO)
+        public async Task<ActionResult<CardDTO>> AddNewCard(long user_id, [FromBody] CardDTO cardDTO)
         {
             await this._service.CreateCard(user_id, cardDTO);
 
-            int cardId = (await this._service.GetCardsByUserId(user_id)).Max(x => x.SubstanceId);
+            long cardId = (await this._service.GetCardsByUserId(user_id)).Max(x => x.SubstanceId);
 
             CardDTO card = await this._service.GetCardData(cardId);
 
@@ -73,7 +76,7 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> EditCardEnabled(int card_id, bool enabled)
+        public async Task<ActionResult> EditCardEnabled(long card_id, bool enabled)
         {
             await this._service.EditCardEnabled(card_id, enabled);
 

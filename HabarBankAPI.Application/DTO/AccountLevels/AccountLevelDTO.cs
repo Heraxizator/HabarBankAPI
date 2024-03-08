@@ -8,7 +8,7 @@ namespace HabarBankAPI.Application.DTO.AccountLevels
 {
     public class AccountLevelDTO
     {
-        public int AccountLevelId { get; set; }
+        public long AccountLevelId { get; set; }
         public string Name { get; set;}
         public bool Enabled { get; set; }
     }

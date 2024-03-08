@@ -4,7 +4,8 @@ using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Substance;
+using HabarBankAPI.Domain.Entities.Transfer;
 using HabarBankAPI.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,7 +34,7 @@ namespace HabarBankAPI.Web.Controllers
 
 
         [HttpGet("{transfer-id}")]
-        public async Task<ActionResult<IList<SendingDTO>>> GetTransferByTransferId(int transfer_id)
+        public async Task<ActionResult<IList<SendingDTO>>> GetTransferByTransferId(long transfer_id)
         {
             SendingDTO sendingDTO = await this._service.GetTransferByTransferId(transfer_id);
 
@@ -41,7 +42,7 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IList<SendingDTO>>> GetTransfersByEntityId(int card_id)
+        public async Task<ActionResult<IList<SendingDTO>>> GetTransfersByEntityId(long card_id)
         {
             IList<SendingDTO> sendingDTOs = await this._service.GetTransfersBySubstanceId(card_id);
 
@@ -53,7 +54,7 @@ namespace HabarBankAPI.Web.Controllers
         {
             await this._service.CreateTransfer(sendingDTO);
 
-            int sendingId = (await this._service.GetTransfersBySubstanceId(sendingDTO.SubstanceId)).Max(x => x.ActionId);
+            long sendingId = (await this._service.GetTransfersBySubstanceId(sendingDTO.SubstanceId)).Max(x => x.ActionId);
 
             SendingDTO sending = await this._service.GetTransferByTransferId(sendingId);
 
@@ -61,7 +62,7 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> SetTransferEnabled(int sending_id, bool enabled)
+        public async Task<ActionResult> SetTransferEnabled(long sending_id, bool enabled)
         {
             await this._service.SetTransferStatus(sending_id, enabled);
 

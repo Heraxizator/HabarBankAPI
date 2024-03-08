@@ -10,9 +10,9 @@ namespace HabarBankAPI.Application.DTO.Cards
 {
     public class CardDTO
     {
-        public int SubstanceId { get; set; }
-        public int CardVariantId { get; set; }
-        public int AccountId { get; set; }
+        public long SubstanceId { get; set; }
+        public long CardVariantId { get; set; }
+        public long AccountId { get; set; }
         public int RublesCount { get; set; }
         public string ImagePath { get; set; }
         public bool Enabled { get; set; }

@@ -12,7 +12,7 @@ namespace HabarBankAPI.Application.Interfaces
     {
         public Task CreateNewAccountLevel(AccountLevelDTO accountLevelDTO);
         public Task<IList<AccountLevelDTO>> GetAllAccountLevels();
-        public Task<AccountLevelDTO> GetAccountLevelById(int id);
-        public Task SetAccountLevelEnabled(int levelId,  bool levelEnabled);
+        public Task<AccountLevelDTO> GetAccountLevelById(long id);
+        public Task SetAccountLevelEnabled(long levelId,  bool levelEnabled);
     }
 }

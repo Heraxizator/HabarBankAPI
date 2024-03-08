@@ -8,12 +8,12 @@ namespace HabarBankAPI.Application.DTO.Cards
 {
     public class CardVariantDTO
     {
-        public int CardVariantId { get; set; }
+        public long CardVariantId { get; set; }
         public string Name { get; set; }
         public string Text { get; set; }
         public int Percentage { get; set; }
-        public int CardTypeId { get; set; }
-        public int AccountLevelId { get; set; }
+        public long CardTypeId { get; set; }
+        public long AccountLevelId { get; set; }
         public bool Enabled { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using HabarBankAPI.Application.DTO.AccountLevels;
 using HabarBankAPI.Application.Interfaces;
+using HabarBankAPI.Domain;
 using HabarBankAPI.Domain.Abstractions.Repositories;
 using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Exceptions.AccountLevel;
@@ -32,10 +33,12 @@ namespace HabarBankAPI.Application.Services
             await Task.Run(() => this._repository.Create(accountLevel));
         }
 
-        public async Task<AccountLevelDTO> GetAccountLevelById(int id)
+        public async Task<AccountLevelDTO> GetAccountLevelById(long id)
         {
+            AccountLevelByIdSpecification specification = new();
+
             AccountLevel? accountLevel = await Task.Run(
-                () => this._repository.Get(x => x.AccountLevelId == id && x.Enabled is true).FirstOrDefault());
+                () => this._repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault());
 
             AccountLevelDTO accountLevelDTO = this._mapperB.Map<AccountLevelDTO>(accountLevel);
 
@@ -44,18 +47,22 @@ namespace HabarBankAPI.Application.Services
 
         public async Task<IList<AccountLevelDTO>> GetAllAccountLevels()
         {
+            AcountLevelsListSpecification specification = new();
+
             IList<AccountLevel> accountLevels = await Task.Run(
-                () => this._repository.Get(x => x.Enabled is true).ToList());
+                () => this._repository.Get(x => specification.IsSatisfiedBy(x)).ToList());
 
             IList<AccountLevelDTO> accountLevelDTOs = this._mapperB.Map<IList<AccountLevelDTO>>(accountLevels);
 
             return accountLevelDTOs;
         }
 
-        public async Task SetAccountLevelEnabled(int levelId, bool levelEnabled)
+        public async Task SetAccountLevelEnabled(long levelId, bool levelEnabled)
         {
+            AccountLevelByIdSpecification specification = new();
+
             AccountLevel? accountLevel = await Task.Run(
-                () => this._repository.Get(x => x.AccountLevelId == levelId && x.Enabled is true).FirstOrDefault());
+                () => this._repository.Get(x => specification.IsSatisfiedBy((x, levelId))).FirstOrDefault());
 
             if (accountLevel is null)
             {

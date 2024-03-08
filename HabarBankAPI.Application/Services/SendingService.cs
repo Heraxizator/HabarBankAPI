@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using HabarBankAPI.Application.DTO.Transfers;
 using HabarBankAPI.Application.Interfaces;
+using HabarBankAPI.Domain;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Substance;
+using HabarBankAPI.Domain.Entities.Transfer;
 using HabarBankAPI.Domain.Exceptions.Sending;
 using HabarBankAPI.Domain.Exceptions.Substance;
 
@@ -28,12 +30,14 @@ namespace HabarBankAPI.Application.Services
         {
             Sending sending = this._mapperA.Map<Sending>(sendingDTO);
 
-            int senderId = sendingDTO.SubstanceSenderId;
+            long senderId = sendingDTO.SubstanceSenderId;
 
-            int recipientId = sendingDTO.SubstanceRecipientId;
+            long recipientId = sendingDTO.SubstanceRecipientId;
+
+            SubstanceByIdSpecification substanceByIdSpecification = new();
 
             Substance? senderSubstance = this._substances_repository.Get(
-                x => x.SubstanceId == senderId && x.Enabled is true).FirstOrDefault();
+                x => substanceByIdSpecification.IsSatisfiedBy((x, senderId))).FirstOrDefault();
 
             if (senderSubstance is null)
             {
@@ -41,7 +45,7 @@ namespace HabarBankAPI.Application.Services
             }
 
             Substance? recipientSubstance = this._substances_repository.Get(
-                x => x.SubstanceId == recipientId && x.Enabled is true).FirstOrDefault();
+                x => substanceByIdSpecification.IsSatisfiedBy((x, recipientId))).FirstOrDefault();
 
             if (recipientSubstance is null)
             {
@@ -66,22 +70,26 @@ namespace HabarBankAPI.Application.Services
             await Task.Run(() => this._sendings_repository.Create(sending));
         }
 
-        public async Task<SendingDTO> GetTransferByTransferId(int sendingId)
+        public async Task<SendingDTO> GetTransferByTransferId(long sendingId)
         {
+            SendingByIdSpecification specification = new();
+
             Sending? sending = await Task.Run(
-                () => this._sendings_repository.Get(x => x.ActionId == sendingId && x.Enabled is true).FirstOrDefault());
+                () => this._sendings_repository.Get(x => specification.IsSatisfiedBy((x, sendingId))).FirstOrDefault());
 
             SendingDTO sendingDTO = this._mapperB.Map<SendingDTO>(sending); 
 
             return sendingDTO;
         }
 
-        public async Task<IList<SendingDTO>> GetTransfersBySubstanceId(int substanceId)
+        public async Task<IList<SendingDTO>> GetTransfersBySubstanceId(long substanceId)
         {
-            IList<Substance> substances = await Task.Run(
-                () => this._substances_repository.Get(x => x.SubstanceId == substanceId && x.Enabled is true).ToList());
+            SubstanceByIdSpecification specification = new();
 
-            IList<int> substancesIds = substances.Select(x => x.SubstanceId).ToList();
+            IList<Substance> substances = await Task.Run(
+                () => this._substances_repository.Get(x => specification.IsSatisfiedBy((x, substanceId))).ToList());
+
+            IList<long> substancesIds = substances.Select(x => x.SubstanceId).ToList();
 
             IList<Sending> sendings = await Task.Run(
                 () => this._sendings_repository.Get(x => substancesIds.Contains(x.SubstanceId)).ToList());
@@ -91,12 +99,14 @@ namespace HabarBankAPI.Application.Services
             return sendingDTOs;
         }
 
-        public async Task<IList<SendingDTO>> GetTransfersByUserId(int userId)
+        public async Task<IList<SendingDTO>> GetTransfersByUserId(long userId)
         {
+            SubstanceByIdSpecification specification = new();
+
             IList<Substance> substances = await Task.Run(
                 () => this._substances_repository.Get(x => x.AccountId == userId && x.Enabled is true).ToList());
 
-            IList<int> substancesIds = substances.Select(x => x.SubstanceId).ToList();
+            IList<long> substancesIds = substances.Select(x => x.SubstanceId).ToList();
 
             IList<Sending> sendings = await Task.Run(
                 () => this._sendings_repository.Get(x => substancesIds.Contains(x.SubstanceId) && x.Enabled is true).ToList());
@@ -106,9 +116,11 @@ namespace HabarBankAPI.Application.Services
             return sendingDTOs;
         }
 
-        public async Task SetTransferStatus(int sendingId, bool sendingEnabled)
+        public async Task SetTransferStatus(long sendingId, bool sendingEnabled)
         {
-            Sending? sending = this._sendings_repository.Get(x => x.ActionId == sendingId).FirstOrDefault();
+            SendingByIdSpecification specification = new();
+
+            Sending? sending = this._sendings_repository.Get(x => specification.IsSatisfiedBy((x, sendingId))).FirstOrDefault();
 
             if (sending is null)
             {

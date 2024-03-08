@@ -8,11 +8,11 @@ namespace HabarBankAPI.Application.DTO.Transfers
 {
     public class SendingDTO
     {
-        public int ActionId { get; set; }
+        public long ActionId { get; set; }
         public DateTime ActionDateTime { get; set; }
-        public int SubstanceId { get; set; }
-        public int SubstanceSenderId { get; set; }
-        public int SubstanceRecipientId { get; set; }
+        public long SubstanceId { get; set; }
+        public long SubstanceSenderId { get; set; }
+        public long SubstanceRecipientId { get; set; }
         public int RublesCount { get; set; }
         public bool Enabled { get; set; }
     }

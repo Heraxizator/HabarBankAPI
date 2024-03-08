@@ -11,8 +11,8 @@ namespace HabarBankAPI.Application.Interfaces
     public interface ICardTypeService : IAppService
     {
         public Task<IList<CardTypeDTO>> GetAllCardTypes();
-        public Task<CardTypeDTO> GetCardTypeById(int id);   
+        public Task<CardTypeDTO> GetCardTypeById(long id);   
         public Task CreateNewCardType(CardTypeDTO cardTypeDTO);
-        public Task SetCardTypeEnabled(int id, bool enabled);
+        public Task SetCardTypeEnabled(long id, bool enabled);
     }
 }

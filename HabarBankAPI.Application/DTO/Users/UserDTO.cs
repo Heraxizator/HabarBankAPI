@@ -8,13 +8,13 @@ namespace HabarBankAPI.Application.DTO.Users
 {
     public class UserDTO
     {
-        public int AccountId { get; set; }
+        public long AccountId { get; set; }
         public string AccountLogin { get; set; }
         public string AccountPassword { get; set; }
         public string AccountPhone { get; set; }
         public string AccountName { get; set; }
         public string AccountSurname { get; set; }
         public string AccountPatronymic { get; set; }
-        public int AccountLevelId { get; set; }
+        public long AccountLevelId { get; set; }
     }
 }

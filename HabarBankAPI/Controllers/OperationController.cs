@@ -4,10 +4,9 @@ using HabarBankAPI.Application.DTO.Transfers;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
-using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Action = HabarBankAPI.Domain.Entities.Action;
+using Action = HabarBankAPI.Domain.Entities.Operation.Action;
 
 namespace HabarBankAPI.Web.Controllers
 {
@@ -39,7 +38,7 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IList<ActionDTO>>> GetOperationsByEntityId(int card_id)
+        public async Task<ActionResult<IList<ActionDTO>>> GetOperationsByEntityId(long card_id)
         {
             IList<ActionDTO> actionDTOs = await this._service.GetActionsByEntityId(card_id);
 
@@ -51,7 +50,7 @@ namespace HabarBankAPI.Web.Controllers
         {
             await this._service.CreateNewAction(actionDTO);
 
-            int actionId = (await this._service.GetAllActions(int.MaxValue)).Max(x => x.ActionId);
+            long actionId = (await this._service.GetAllActions(int.MaxValue)).Max(x => x.ActionId);
 
             ActionDTO action = await this._service.GetActionByActionId(actionId);
 

@@ -31,7 +31,7 @@ namespace HabarBankAPI.Infrastructure.Repositories
         {
             return _dbSet.AsNoTracking().Where(predicate).ToList();
         }
-        public TEntity FindById(int id)
+        public TEntity FindById(long id)
         {
             return _dbSet.Find(id);
         }

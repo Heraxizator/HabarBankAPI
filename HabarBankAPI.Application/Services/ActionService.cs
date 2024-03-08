@@ -2,8 +2,8 @@
 using AutoMapper;
 using HabarBankAPI.Application.DTO.Actions;
 using HabarBankAPI.Application.Interfaces;
+using HabarBankAPI.Domain;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Exceptions.Action;
 using HabarBankAPI.Domain.Share;
 using System;
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Action = HabarBankAPI.Domain.Entities.Action;
+using Action = HabarBankAPI.Domain.Entities.Operation.Action;
 
 namespace HabarBankAPI.Application.Services
 {
@@ -37,21 +37,18 @@ namespace HabarBankAPI.Application.Services
             await Task.Run(() => this._repository.Create(action));
         }
 
-        public async Task<ActionDTO> GetActionByActionId(int id)
+        public async Task<ActionDTO> GetActionByActionId(long id)
         {
-            Action action = await Task.Run(() => this._repository.FindById(id));
+            ActionByIdSpecification specification = new();
 
-            if (action is null)
-            {
-                throw new ActionNotFoundException($"Операция с идентификатором {id} не найдена");
-            }
+            Action? action = await Task.Run(() => this._repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault());
 
             ActionDTO actionDTO = this._mapperB.Map<ActionDTO>(action);
 
             return actionDTO;
         }
 
-        public async Task<IList<ActionDTO>> GetActionsByEntityId(int id)
+        public async Task<IList<ActionDTO>> GetActionsByEntityId(long id)
         {
             IList<Action> actions = await Task.Run(
                 () => this._repository.Get(x => x.SubstanceId == id && x.Enabled is true).ToList());
@@ -71,9 +68,11 @@ namespace HabarBankAPI.Application.Services
             return actionDTO;
         }
 
-        public async Task SetActionEnabled(int id, bool enabled)
+        public async Task SetActionEnabled(long id, bool enabled)
         {
-            Action action = await Task.Run(() => this._repository.FindById(id));
+            ActionByIdSpecification specification = new();
+
+            Action? action = await Task.Run(() => this._repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault());
 
             if (action is null)
             {

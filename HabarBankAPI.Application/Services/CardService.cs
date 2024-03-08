@@ -4,15 +4,18 @@ using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain.Abstractions.Repositories;
 using HabarBankAPI.Domain.Constants;
 using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Card;
+using HabarBankAPI.Domain.Entities.Substance;
 using HabarBankAPI.Domain.Exceptions.Account;
 using HabarBankAPI.Domain.Exceptions.Card;
+using HabarBankAPI.Domain.Factories;
 using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Action = HabarBankAPI.Domain.Entities.Action;
+using Action = HabarBankAPI.Domain.Entities.Operation.Action;
 
 namespace HabarBankAPI.Application.Services
 {
@@ -43,7 +46,7 @@ namespace HabarBankAPI.Application.Services
             this._users_repository = users_repository;
             this._entities_repository = entities_repository;
         }
-        public async Task AddPercentage(int id)
+        public async Task AddPercentage(long id)
         {
             Card? card = await Task.Run(
                 () => this._cards_repository.Get(x => x.SubstanceId == id && x.Enabled is true).FirstOrDefault());
@@ -58,10 +61,8 @@ namespace HabarBankAPI.Application.Services
             await Task.Run(() => this._cards_repository.Update(card));
         }
 
-        public async Task CreateCard(int userId, CardDTO cardDTO)
+        public async Task CreateCard(long userId, CardDTO cardDTO)
         {
-            Card card = this._card_mapperA.Map<Card>(cardDTO);
-
             Account? user = await Task.Run(
                 () => this._users_repository.Get(x => x.AccountId == userId && x.Enabled is true).FirstOrDefault());
 
@@ -70,10 +71,20 @@ namespace HabarBankAPI.Application.Services
                 throw new AccountNotFoundException($"Аккаунт с идентификатором {userId} не найден");
             }
 
+            CardFactory cardFactory = new();
+
+            cardFactory.WithImagePath(cardDTO.ImagePath);
+
+            cardFactory.WithCardVariantId(cardDTO.CardVariantId);
+
+            cardFactory.WithRublesCount(cardDTO.RublesCount);
+
+            Card card = cardFactory.Build();
+
             await Task.Run(() => this._cards_repository.Create(card));
         }
 
-        public async Task EditCardEnabled(int id, bool enabled)
+        public async Task EditCardEnabled(long id, bool enabled)
         {
             Card? card = await Task.Run(
                 () => this._cards_repository.Get(x => x.SubstanceId == id && x.Enabled is true).FirstOrDefault());
@@ -88,27 +99,22 @@ namespace HabarBankAPI.Application.Services
             await Task.Run(() => this._cards_repository.Update(card));
         }
 
-        public async Task<CardDTO> GetCardData(int id)
+        public async Task<CardDTO> GetCardData(long id)
         {
             Card? card = await Task.Run(
                 () => this._cards_repository.Get(x => x.SubstanceId == id && x.Enabled is true).FirstOrDefault());
-
-            if (card is null)
-            {
-                throw new CardNotFoundException($"Карта с идентификатором {id} не найдена");
-            }
 
             CardDTO cardDTO = this._card_mapperB.Map<CardDTO>(card);
 
             return cardDTO;
         }
 
-        public async Task<IList<CardDTO>> GetCardsByUserId(int userId)
+        public async Task<IList<CardDTO>> GetCardsByUserId(long userId)
         {
             IList<Substance> entities = await Task.Run(
                 () => this._entities_repository.Get(x => x.AccountId == userId && x.Enabled is true).ToList());
 
-            IList<int> entitiesIds = entities.Select(x => x.SubstanceId).ToList();
+            IList<long> entitiesIds = entities.Select(x => x.SubstanceId).ToList();
 
             IList<Card> cards = await Task.Run(
                 () => this._cards_repository.Get(x => entitiesIds.Contains(x.SubstanceId)).ToList());

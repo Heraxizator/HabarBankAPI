@@ -5,7 +5,7 @@ using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Operation;
 using HabarBankAPI.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,7 +53,7 @@ namespace HabarBankAPI.Web.Controllers
         {
             await _service.CreateNewActionType(actionTypeDTO);
 
-            int actionTypeId = (await this._service.GetAllActionTypes()).Max(x => x.ActionTypeId);
+            long actionTypeId = (await this._service.GetAllActionTypes()).Max(x => x.ActionTypeId);
 
             ActionTypeDTO actionType = await this._service.GetActionTypeById(actionTypeId);
 

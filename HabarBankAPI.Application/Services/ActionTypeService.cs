@@ -2,7 +2,7 @@
 using HabarBankAPI.Application.DTO.Actions;
 using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Operation;
 using HabarBankAPI.Domain.Exceptions.Action;
 using System;
 using System.Collections.Generic;
@@ -32,7 +32,7 @@ namespace HabarBankAPI.Application.Services
             await Task.Run(() => this._repository.Create(actionType));
         }
 
-        public async Task<ActionTypeDTO> GetActionTypeById(int id)
+        public async Task<ActionTypeDTO> GetActionTypeById(long id)
         {
             ActionType? actionType = await Task.Run(
                 () => this._repository.Get(x => x.ActionTypeId == id && x.Enabled is true).FirstOrDefault());
@@ -52,7 +52,7 @@ namespace HabarBankAPI.Application.Services
             return actionTypeDTOs;
         }
 
-        public async Task SetActionTypeEnabled(int id, bool enabled)
+        public async Task SetActionTypeEnabled(long id, bool enabled)
         {
             ActionType? actionType = await Task.Run(
                 () => this._repository.Get(x => x.ActionTypeId == id && x.Enabled is true).FirstOrDefault());

@@ -11,9 +11,9 @@ namespace HabarBankAPI.Application.Interfaces
     public interface IActionService : IAppService
     {
         public Task<IList<ActionDTO>> GetAllActions(int count);
-        public Task<IList<ActionDTO>> GetActionsByEntityId(int id);
-        public Task<ActionDTO> GetActionByActionId(int id);
+        public Task<IList<ActionDTO>> GetActionsByEntityId(long id);
+        public Task<ActionDTO> GetActionByActionId(long id);
         public Task CreateNewAction(ActionDTO actionDTO);
-        public Task SetActionEnabled(int id, bool enabled);
+        public Task SetActionEnabled(long id, bool enabled);
     }
 }

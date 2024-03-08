@@ -10,10 +10,10 @@ namespace HabarBankAPI.Application.Interfaces
 {
     public interface ICardService : IAppService
     {
-        public Task CreateCard(int userId, CardDTO cardDTO);
-        public Task<IList<CardDTO>> GetCardsByUserId(int userId);
-        public Task EditCardEnabled(int id, bool enabled);
-        public Task<CardDTO> GetCardData(int id);
-        public Task AddPercentage(int id);
+        public Task CreateCard(long userId, CardDTO cardDTO);
+        public Task<IList<CardDTO>> GetCardsByUserId(long userId);
+        public Task EditCardEnabled(long id, bool enabled);
+        public Task<CardDTO> GetCardData(long id);
+        public Task AddPercentage(long id);
     }
 }

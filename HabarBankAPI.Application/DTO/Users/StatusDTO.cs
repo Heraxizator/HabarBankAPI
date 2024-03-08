@@ -8,8 +8,8 @@ namespace HabarBankAPI.Application.DTO.Users
 {
     public class StatusDTO
     {
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         public bool UserEnabled { get; set; }
-        public int UserUserLevelId { get; set; }
+        public long UserLevelId { get; set; }
     }
 }

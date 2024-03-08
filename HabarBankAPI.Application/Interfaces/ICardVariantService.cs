@@ -11,7 +11,7 @@ namespace HabarBankAPI.Application.Interfaces
     {
         public Task CreateNewCardVariant(CardVariantDTO cardVariantDTO);
         public Task<IList<CardVariantDTO>> GetAllCardVariants();
-        public Task<CardVariantDTO> GetCardVariantById(int id);
-        public Task SetCardVariantEnabled(int id, bool enabled);
+        public Task<CardVariantDTO> GetCardVariantById(long id);
+        public Task SetCardVariantEnabled(long id, bool enabled);
     }
 }

@@ -8,7 +8,7 @@ namespace HabarBankAPI.Application.DTO.Cards
 {
     public class CardTypeDTO
     {
-        public int CardTypeId { get; set; }
+        public long CardTypeId { get; set; }
         public string Name { get; set; }
         public bool Enabled { get; set; }
     }

@@ -5,7 +5,7 @@ using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Card;
 using HabarBankAPI.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -52,7 +52,7 @@ namespace HabarBankAPI.Web.Controllers
         {
             await _service.CreateNewCardType(cardTypeDTO);
 
-            int cardTypeId = (await this._service.GetAllCardTypes()).Max(x => x.CardTypeId);
+            long cardTypeId = (await this._service.GetAllCardTypes()).Max(x => x.CardTypeId);
 
             CardTypeDTO cardType = await this._service.GetCardTypeById(cardTypeId);
 

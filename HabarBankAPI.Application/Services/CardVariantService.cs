@@ -2,7 +2,7 @@
 using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Card;
 using HabarBankAPI.Domain.Exceptions.Card;
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ namespace HabarBankAPI.Application.Services
             return cardVariantDTOs;
         }
 
-        public async Task<CardVariantDTO> GetCardVariantById(int id)
+        public async Task<CardVariantDTO> GetCardVariantById(long id)
         {
             CardVariant cardVariant = await Task.Run(() => this._repository.FindById(id));
 
@@ -50,7 +50,7 @@ namespace HabarBankAPI.Application.Services
             return cardVariantDTO;
         }
 
-        public async Task SetCardVariantEnabled(int id, bool enabled)
+        public async Task SetCardVariantEnabled(long id, bool enabled)
         {
             CardVariant cardVariant = await Task.Run(() => this._repository.FindById(id));
 

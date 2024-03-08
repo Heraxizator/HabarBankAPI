@@ -8,10 +8,10 @@ namespace HabarBankAPI.Application.DTO.Actions
 {
     public class ActionDTO
     {
-        public int ActionId { get; set; }
-        public int ActionTypeId { get; set; }
+        public long ActionId { get; set; }
+        public long ActionTypeId { get; set; }
         public DateTime ActionDateTime { get; set; }
-        public int SubstanceId { get; set; }
+        public long SubstanceId { get; set; }
         public bool Enabled { get; set; }
     }
 }
