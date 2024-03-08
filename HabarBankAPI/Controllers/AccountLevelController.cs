@@ -6,7 +6,7 @@ using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.AccountLevel;
 using HabarBankAPI.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 

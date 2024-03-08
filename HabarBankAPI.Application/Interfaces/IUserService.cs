@@ -2,7 +2,7 @@
 using HabarBankAPI.Application.DTO.Account;
 using HabarBankAPI.Application.DTO.Accounts;
 using HabarBankAPI.Application.DTO.Users;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.AccountLevel;
 using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;

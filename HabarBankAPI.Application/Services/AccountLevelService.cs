@@ -3,7 +3,7 @@ using HabarBankAPI.Application.DTO.AccountLevels;
 using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.AccountLevel;
 using HabarBankAPI.Domain.Exceptions.AccountLevel;
 using System;
 using System.Collections.Generic;

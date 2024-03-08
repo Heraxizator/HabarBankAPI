@@ -1,5 +1,5 @@
 ﻿using HabarBankAPI.Domain.Abstractions;
-using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.AccountLevel;
 using System;
 using System.Collections.Generic;
 using System.Linq;

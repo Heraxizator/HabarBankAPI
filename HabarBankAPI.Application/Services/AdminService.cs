@@ -14,6 +14,7 @@ using HabarBankAPI.Application.DTO.Users;
 using HabarBankAPI.Domain.Exceptions.Account;
 using HabarBankAPI.Domain.Exceptions.AccountLevel;
 using HabarBankAPI.Domain.Factories;
+using HabarBankAPI.Domain.Entities.Admin;
 
 namespace HabarBankAPI.Application.Services
 {

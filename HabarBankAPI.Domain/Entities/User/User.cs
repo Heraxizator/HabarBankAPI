@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HabarBankAPI.Domain
+namespace HabarBankAPI.Domain.Entities.User
 {
     public class User : Account, IAggregateRoot
     {
@@ -24,14 +24,14 @@ namespace HabarBankAPI.Domain
             this.AccountSurname = AccountSurname;
             this.AccountPatronymic = AccountPatronymic;
             this.AccountLevelId = AccountLevelId;
-            this.Enabled = AccountEnabled;
+            Enabled = AccountEnabled;
         }
 
         public long AccountLevelId { get; private set; }
 
         public void SetUserStatus(long accountLevelId)
         {
-            this.AccountLevelId = accountLevelId;
+            AccountLevelId = accountLevelId;
         }
 
     }

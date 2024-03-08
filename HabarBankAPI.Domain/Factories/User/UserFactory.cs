@@ -1,4 +1,5 @@
 ﻿using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.User;
 using HabarBankAPI.Domain.Exceptions.Account;
 using HabarBankAPI.Domain.Exceptions.AccountLevel;
 using HabarBankAPI.Domain.Specifications.Account;

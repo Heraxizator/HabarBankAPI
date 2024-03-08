@@ -1,4 +1,5 @@
 ﻿using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.User;
 using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;

@@ -1,7 +1,7 @@
-﻿
-using HabarBankAPI.Domain;
-using HabarBankAPI.Domain.Abstractions.Database;
+﻿using HabarBankAPI.Domain.Abstractions.Database;
 using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.AccountLevel;
+using HabarBankAPI.Domain.Entities.Admin;
 using HabarBankAPI.Domain.Entities.Card;
 using HabarBankAPI.Domain.Entities.MetalBill;
 using HabarBankAPI.Domain.Entities.MetalScore;
@@ -9,6 +9,7 @@ using HabarBankAPI.Domain.Entities.MetalScore.MetalScore;
 using HabarBankAPI.Domain.Entities.Operation;
 using HabarBankAPI.Domain.Entities.Substance;
 using HabarBankAPI.Domain.Entities.Transfer;
+using HabarBankAPI.Domain.Entities.User;
 using HabarBankAPI.Domain.Entities.ValutaBill;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;

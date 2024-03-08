@@ -1,13 +1,14 @@
 ﻿using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HabarBankAPI.Domain
+namespace HabarBankAPI.Domain.Entities.Admin
 {
-    public class Admin : Account
+    public class Admin : Account, IAggregateRoot
     {
         public Admin() { }
 
@@ -21,7 +22,7 @@ namespace HabarBankAPI.Domain
             this.AccountName = AccountName;
             this.AccountSurname = AccountSurname;
             this.AccountPatronymic = AccountPatronymic;
-            this.Enabled = AccountEnabled;
+            Enabled = AccountEnabled;
         }
     }
 }
