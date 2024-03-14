@@ -7,12 +7,13 @@ using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities.AccountLevel;
-using HabarBankAPI.Domain.Entities.User;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Exceptions.Account;
 using HabarBankAPI.Domain.Exceptions.AccountLevel;
 using HabarBankAPI.Domain.Factories;
 using HabarBankAPI.Domain.Specifications.Account;
+using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Uow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,67 +25,64 @@ namespace HabarBankAPI.Application.Services
     public sealed class UserService : IUserService
     {
         private readonly Mapper _mapper;
-        private readonly IGenericRepository<User> _users_repository;
-        private readonly IGenericRepository<AccountLevel> _levels_repository;
 
-        public UserService(Mapper mapper, 
-            IGenericRepository<User> usersRepository,
-            IGenericRepository<AccountLevel> levelsRepository) 
+        private readonly GenericRepository<User> _users_repository;
+        private readonly GenericRepository<UserLevel> _levels_repository;
+        private readonly UnitOfWork _unitOfWork;
+
+        public UserService(
+            Mapper mapper, 
+            GenericRepository<User> usersRepository,
+            GenericRepository<UserLevel> levelsRepository,
+            UnitOfWork unitOfWork) 
         { 
             this._mapper = mapper;
             this._users_repository = usersRepository;
             this._levels_repository = levelsRepository;
+            this._unitOfWork = unitOfWork;
         }
 
         public async Task CreateUserAccount(UserDTO userDTO)
         {
-            UserFactory userFactory = new();
-
-            userFactory.WithLogin(userDTO.AccountLogin);
-
-            userFactory.WithPassword(userDTO.AccountPassword);
-
-            userFactory.WithPhone(userDTO.AccountPhone);
-
-            userFactory.WithName(userDTO.AccountName);
-
-            userFactory.WithSurname(userDTO.AccountSurname);
-
-            userFactory.WithPatronymic(userDTO.AccountPatronymic);
-
-            userFactory.WithAccountLevelId(userDTO.AccountLevelId);
-
-            User user = userFactory.Build();
-
-            AccountLevelByIdSpecification accountLevelByIdSpecification = new();
-
-            AccountLevel? accountLevel = await Task.Run(() => this._levels_repository.Get(
-                x => accountLevelByIdSpecification.IsSatisfiedBy((x, user.AccountLevelId))).FirstOrDefault());
+            UserLevel? accountLevel = this._levels_repository.GetWithInclude(x => x.Users)
+                .FirstOrDefault(accountLevel => accountLevel.AccountLevelId == userDTO.UserLevelId && accountLevel.Enabled);
 
             if (accountLevel is null)
             {
-                throw new AccountLevelNotFoundException($"Не найден уровень аккаунта с идентификатором {user.AccountLevelId}");
+                throw new AccountLevelNotFoundException($"Уровень с идентификатором {userDTO.UserLevelId} не найден");
             }
 
-            AuthByDataSpecification authByDataSpecification = new();
+            UserFactory userFactory = new();
+
+            User user = userFactory
+                .WithLogin(userDTO.AccountLogin)
+                .WithPassword(userDTO.AccountPassword)
+                .WithPhone(userDTO.AccountPhone)
+                .WithName(userDTO.AccountName)
+                .WithSurname(userDTO.AccountSurname)
+                .WithPatronymic(userDTO.AccountPatronymic)
+                .WithAccountLevel(accountLevel)
+            .Build();
 
             IList<User> users = await Task.Run(() => this._users_repository.Get(
-                    x => authByDataSpecification.IsSatisfiedBy((x, user.AccountLogin, user.AccountPassword))).ToList());
+                    user => user.AccountLogin == userDTO.AccountLogin && user.AccountPassword == userDTO.AccountPassword && user.Enabled is true).ToList());
 
             if (users.Any())
             {
                 throw new AccountAlreadyExistsException("Аккаунт с заданным логином и паролём уже существует");
             }
 
+            accountLevel.Users.Add(user);
+
             await Task.Run(
-                () =>_users_repository.Create(user));
+                () =>_levels_repository.Update(accountLevel));
+
+            await this._unitOfWork.Commit();
         }
 
         public async Task EditAccountEnabled(long id, bool enabled)
         {
-            AccountByIdSpecification specification = new();
-
-            User? user = this._users_repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault();
+            User? user = this._users_repository.Get(user => user.UserId == id).FirstOrDefault();
 
             if (user is null)
             {
@@ -95,13 +93,13 @@ namespace HabarBankAPI.Application.Services
 
             await Task.Run(
                 () => this._users_repository.Update(user));
+
+            await this._unitOfWork.Commit();
         }
 
         public async Task EditAccountProfile(long id, ProfileDTO profileDTO)
         {
-            AccountByIdSpecification specification = new();
-
-            User? user = this._users_repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault();
+            User? user = this._users_repository.Get(user => user.UserId == id && user.Enabled is true).FirstOrDefault();
 
             if (user is null)
             {
@@ -113,56 +111,81 @@ namespace HabarBankAPI.Application.Services
 
             await Task.Run(
                 () => _users_repository.Update(user));
+
+            await this._unitOfWork.Commit();
         }
 
-        public async Task EditAccountStatus(long id, AccountLevel level)
+        public async Task EditAccountStatus(long id, UserLevel level)
         {
-            AccountByIdSpecification specification = new();
-
             User? user = await Task.Run(
-                () => this._users_repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault());
+                () => this._users_repository.Get(user => user.UserId == id && user.Enabled is true).FirstOrDefault());
 
             if (user is null)
             {
                 throw new AccountArgumentTypeException("Пользователь с идентификатором {id} не найден");
             }
 
-            user.SetUserStatus(level.AccountLevelId);
+            user.SetUserStatus(level);
 
             await Task.Run(
                 () => _users_repository.Update(user));
+
+            await this._unitOfWork.Commit();
+        }
+
+        public async Task EditAccountStatus(long id, long levelId)
+        {
+            User? user = await Task.Run(
+                () => this._users_repository.Get(user => user.UserId == id && user.Enabled is true).FirstOrDefault());
+
+            if (user is null)
+            {
+                throw new AccountArgumentTypeException("Пользователь с идентификатором {id} не найден");
+            }
+
+            UserLevel? userLevel = await Task.Run(
+                () => this._levels_repository.Get(userLevel => userLevel.AccountLevelId == levelId && userLevel.Enabled is true).FirstOrDefault());
+
+            if (userLevel is null)
+            {
+                throw new AccountLevelNotFoundException($"Уровень с идентификатором {levelId} не найден");
+            }
+
+            user.SetUserStatus(userLevel);
+
+            await Task.Run(
+                () => _users_repository.Update(user));
+
+            await this._unitOfWork.Commit();
         }
 
         public async Task<UserDTO> GetAccountById(long id)
         {
-            AccountByIdSpecification specification = new();
-
             User? user = await Task.Run(
-                () => this._users_repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault());
+                () => this._users_repository.GetWithInclude(user => user.UserLevel)
+                .FirstOrDefault(user => user.UserId == id && user.Enabled is true));
 
-            UserDTO userDTO = _mapper.Map<UserDTO>(user);
+            UserDTO userDTO = PrepareUserDTO(user);
 
             return userDTO;
         }
 
         public async Task<IList<UserDTO>> GetAccountsList(int count)
         {
-            AccountsListSpecification specification = new();
-
             IList<User> users = await Task.Run(
-                () => _users_repository.Get(x => specification.IsSatisfiedBy(x)).Take(count).ToList());
+                () => _users_repository.GetWithInclude(user => user.UserLevel)
+                .Where(user => user.Enabled is true).Take(count).ToList());
 
-            IList<UserDTO> userDTOs = _mapper.Map<IList<UserDTO>>(users);
+            IList<UserDTO> userDTOs = PreapreUserDTOs(users);
 
             return userDTOs;
         }
 
         public async Task<UserDTO> GetAuthTokenByData(string login, string password)
         {
-            AuthByDataSpecification specification = new();
-
             IList<User> users = await Task.Run(
-                () => _users_repository.Get(x => specification.IsSatisfiedBy((x, login, password))).ToList());
+                () => _users_repository.GetWithInclude(user => user.UserLevel)
+                .Where(user => user.AccountLogin == login && user.AccountPassword == password && user.Enabled is true).ToList());
 
             if (users.Count > 1)
             {
@@ -174,7 +197,7 @@ namespace HabarBankAPI.Application.Services
                 throw new AccountNotFoundException($"Аккаунт с указанным логином и паролём не найден");
             }
 
-            UserDTO accountDTO = this._mapper.Map<UserDTO>(users.First());
+            UserDTO accountDTO = PrepareUserDTO(users.First());
 
             return accountDTO;
         }
@@ -182,6 +205,36 @@ namespace HabarBankAPI.Application.Services
         public Task<UserDTO> GetAuthTokenBySMS(string phone, string sms)
         {
             throw new NotImplementedException();
+        }
+
+        internal IList<UserDTO> PreapreUserDTOs(IList<User> users)
+        {
+            IList<UserDTO> userDTOs = new List<UserDTO>();
+
+            foreach (User user in users)
+            {
+                UserDTO userDTO = this._mapper.Map<UserDTO>(user);
+
+                userDTO.UserLevelId = user.UserLevel.AccountLevelId;
+
+                userDTOs.Add(userDTO);
+            }
+
+            return userDTOs;
+        }
+
+        internal UserDTO PrepareUserDTO(User? user)
+        {
+            UserDTO userDTO = this._mapper.Map<UserDTO>(user);
+
+            if (user is null)
+            {
+                return userDTO;
+            }
+
+            userDTO.UserLevelId = user.UserLevel.AccountLevelId;
+
+            return userDTO;
         }
     }
 }

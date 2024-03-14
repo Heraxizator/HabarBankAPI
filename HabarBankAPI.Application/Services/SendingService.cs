@@ -3,10 +3,17 @@ using HabarBankAPI.Application.DTO.Transfers;
 using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities.Substance;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Entities.Transfer;
+using HabarBankAPI.Domain.Entities.ValutaBill;
+using HabarBankAPI.Domain.Exceptions.Action;
 using HabarBankAPI.Domain.Exceptions.Sending;
 using HabarBankAPI.Domain.Exceptions.Substance;
+using HabarBankAPI.Domain.Exceptions.User;
+using HabarBankAPI.Domain.Factories;
+using HabarBankAPI.Domain.Factories.Transfer;
+using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Uow;
 
 namespace HabarBankAPI.Application.Services
 {
@@ -14,40 +21,47 @@ namespace HabarBankAPI.Application.Services
     {
         private readonly Mapper _mapperA;
         private readonly Mapper _mapperB;
-        private readonly IGenericRepository<Sending> _sendings_repository;
-        private readonly IGenericRepository<Substance> _substances_repository;
 
-        public SendingService(Mapper mapperA, Mapper mapperB, 
-            IGenericRepository<Sending> sendingsRepository, IGenericRepository<Substance> substanceRepository)
+        private readonly GenericRepository<Sending> _sendings_repository;
+        private readonly GenericRepository<Card> _cards_repository;
+        private readonly GenericRepository<User> _users_repository;
+        private readonly GenericRepository<OperationType> _operationtypes_repository;
+        private readonly UnitOfWork _unitOfWork;
+
+        public SendingService(
+            Mapper mapperA,
+            Mapper mapperB,
+            GenericRepository<Sending> sendingsRepository,
+            GenericRepository<Card> cardsRepository,
+            GenericRepository<User> usersRepository,
+            GenericRepository<OperationType> operationTypesRepository,
+            UnitOfWork unitOfWork)
         {
             this._mapperA = mapperA;
             this._mapperB = mapperB;
             this._sendings_repository = sendingsRepository;
-            this._substances_repository = substanceRepository;
+            this._cards_repository = cardsRepository;
+            this._users_repository = usersRepository;
+            this._operationtypes_repository = operationTypesRepository;
+            this._unitOfWork = unitOfWork;
         }
 
         public async Task CreateTransfer(SendingDTO sendingDTO)
         {
-            Sending sending = this._mapperA.Map<Sending>(sendingDTO);
+            Card? senderCard = this._cards_repository
+                .GetWithInclude(card => card.Transfers)
+                .FirstOrDefault(card => card.CardId == sendingDTO.SubstanceSenderId && card.Enabled is true);
 
-            long senderId = sendingDTO.SubstanceSenderId;
-
-            long recipientId = sendingDTO.SubstanceRecipientId;
-
-            SubstanceByIdSpecification substanceByIdSpecification = new();
-
-            Substance? senderSubstance = this._substances_repository.Get(
-                x => substanceByIdSpecification.IsSatisfiedBy((x, senderId))).FirstOrDefault();
-
-            if (senderSubstance is null)
+            if (senderCard is null)
             {
                 throw new SubstanceNotFoundException("Идентификатор отправителя не является правильным");
             }
 
-            Substance? recipientSubstance = this._substances_repository.Get(
-                x => substanceByIdSpecification.IsSatisfiedBy((x, recipientId))).FirstOrDefault();
+            Card? recipientCard = this._cards_repository
+                .GetWithInclude(card => card.Transfers)
+                .FirstOrDefault(card => card.CardId == sendingDTO.SubstanceRecipientId && card.Enabled is true);
 
-            if (recipientSubstance is null)
+            if (recipientCard is null)
             {
                 throw new SubstanceNotFoundException("Идентификатор отправителя не является правильным");
             }
@@ -59,68 +73,84 @@ namespace HabarBankAPI.Application.Services
                 throw new SubstanceArgumentException("Сумма перевода должна быть больше нуля");
             }
 
-            senderSubstance.RublesCount -= sendingRubles;
+            senderCard.RublesCount -= sendingRubles;
 
-            recipientSubstance.RublesCount += sendingRubles;
+            recipientCard.RublesCount += sendingRubles;
 
-            await Task.Run(() => this._substances_repository.Update(senderSubstance));
+            OperationType? operationType = this._operationtypes_repository.Get(
+                operationType => operationType.OperationTypeId == sendingDTO.OperationTypeId && operationType.Enabled is true).FirstOrDefault();
 
-            await Task.Run(() => this._substances_repository.Update(recipientSubstance));
+            if (operationType is null)
+            {
+                throw new OperationTypeNotFoundException($"Тип операции с идентификатором {sendingDTO.OperationTypeId} не найден");
+            }
+            
+            TransferFactory transferFactory = new();
 
-            await Task.Run(() => this._sendings_repository.Create(sending));
+            Sending sending = transferFactory
+                .WithCardSender(senderCard)
+                .WithCardRecipient(recipientCard)
+                .WithOperationType(operationType)
+                .WithRublesCount(sendingDTO.RublesCount)
+            .Build();
+
+            senderCard.Transfers.Clear();
+
+            senderCard.Transfers.Add(sending);
+
+            await Task.Run(() => this._cards_repository.Update(senderCard));
+
+            await this._unitOfWork.Commit();
         }
 
         public async Task<SendingDTO> GetTransferByTransferId(long sendingId)
         {
-            SendingByIdSpecification specification = new();
-
             Sending? sending = await Task.Run(
-                () => this._sendings_repository.Get(x => specification.IsSatisfiedBy((x, sendingId))).FirstOrDefault());
+                () => this._sendings_repository
+                .GetWithInclude(sending => sending.Card, sending => sending.CardRecipient, sending => sending.CardSender, sending => sending.OperationType)
+                .FirstOrDefault(sending => sending.SendingId == sendingId && sending.Enabled is true));
 
-            SendingDTO sendingDTO = this._mapperB.Map<SendingDTO>(sending); 
+            SendingDTO sendingDTO = PrepareTransferDTO(sending);
 
             return sendingDTO;
         }
 
         public async Task<IList<SendingDTO>> GetTransfersBySubstanceId(long substanceId)
         {
-            SubstanceByIdSpecification specification = new();
-
-            IList<Substance> substances = await Task.Run(
-                () => this._substances_repository.Get(x => specification.IsSatisfiedBy((x, substanceId))).ToList());
-
-            IList<long> substancesIds = substances.Select(x => x.SubstanceId).ToList();
-
             IList<Sending> sendings = await Task.Run(
-                () => this._sendings_repository.Get(x => substancesIds.Contains(x.SubstanceId)).ToList());
+                () => this._sendings_repository
+                .GetWithInclude(sending => sending.Card, sending => sending.CardSender, sending => sending.CardRecipient, sending => sending.OperationType)
+                .Where(sending => sending.Card.CardId == substanceId && sending.Enabled is true)
+                .ToList());
 
-            IList<SendingDTO> sendingDTOs = this._mapperB.Map<IList<SendingDTO>>(sendings);
+            IList<SendingDTO> sendingDTOs = PrepareTransferDTOs(sendings);
 
             return sendingDTOs;
         }
 
         public async Task<IList<SendingDTO>> GetTransfersByUserId(long userId)
         {
-            SubstanceByIdSpecification specification = new();
+            User? user = await Task.Run(() => this._users_repository.Get(
+                user => user.UserId == userId && user.Enabled is true).FirstOrDefault());
 
-            IList<Substance> substances = await Task.Run(
-                () => this._substances_repository.Get(x => x.AccountId == userId && x.Enabled is true).ToList());
-
-            IList<long> substancesIds = substances.Select(x => x.SubstanceId).ToList();
+            if (user is null)
+            {
+                throw new UserNotFoundException($"Пользователь с идентификатором {userId} не найден");
+            }
 
             IList<Sending> sendings = await Task.Run(
-                () => this._sendings_repository.Get(x => substancesIds.Contains(x.SubstanceId) && x.Enabled is true).ToList());
+                () => this._sendings_repository
+                .GetWithInclude(sending => sending.Card, sending => sending.CardRecipient, sending => sending.CardSender, sending => sending.OperationType)
+                .Where(sending => sending.Card?.User?.UserId == userId && sending.Enabled is true).ToList());
 
-            IList<SendingDTO> sendingDTOs = this._mapperB.Map<IList<SendingDTO>>(sendings);
+            IList<SendingDTO> sendingDTOs = PrepareTransferDTOs(sendings);
 
             return sendingDTOs;
         }
 
         public async Task SetTransferStatus(long sendingId, bool sendingEnabled)
         {
-            SendingByIdSpecification specification = new();
-
-            Sending? sending = this._sendings_repository.Get(x => specification.IsSatisfiedBy((x, sendingId))).FirstOrDefault();
+            Sending? sending = this._sendings_repository.Get(sending => sending.SendingId == sendingId).FirstOrDefault();
 
             if (sending is null)
             {
@@ -130,6 +160,37 @@ namespace HabarBankAPI.Application.Services
             sending.SetEnabled(sendingEnabled);
 
             await Task.Run(() => this._sendings_repository.Update(sending));
+
+            await this._unitOfWork.Commit();
+        }
+
+        internal IList<SendingDTO> PrepareTransferDTOs(IList<Sending> sendings)
+        {
+            IList<SendingDTO> sendingDTOs = new List<SendingDTO>();
+
+            foreach (Sending sending in sendings)
+            {
+                SendingDTO sendingDTO = PrepareTransferDTO(sending);
+
+                sendingDTOs.Add(sendingDTO);
+            }
+
+            return sendingDTOs;
+        }
+
+        internal SendingDTO PrepareTransferDTO(Sending? sending)
+        {
+            SendingDTO sendingDTO = this._mapperB.Map<SendingDTO>(sending);
+
+            sendingDTO.SubstanceId = sending?.Card is null ? 0 : sending.Card.CardId;
+
+            sendingDTO.SubstanceSenderId = sending?.CardSender is null ? 0 : sending.CardSender.CardId;
+
+            sendingDTO.SubstanceRecipientId = sending?.CardRecipient is null ? 0 : sending.CardRecipient.CardId;
+
+            sendingDTO.OperationTypeId = sending?.OperationType is null ? 0 : sending.OperationType.OperationTypeId;
+
+            return sendingDTO;
         }
     }
 }

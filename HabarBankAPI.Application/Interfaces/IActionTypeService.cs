@@ -1,5 +1,4 @@
-﻿using HabarBankAPI.Application.DTO.Actions;
-using HabarBankAPI.Domain.Entities;
+﻿using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
@@ -11,9 +10,9 @@ namespace HabarBankAPI.Application.Interfaces
 {
     public interface IActionTypeService : IAppService
     {
-        public Task<IList<ActionTypeDTO>> GetAllActionTypes();
-        public Task<ActionTypeDTO> GetActionTypeById(long id);
-        public Task CreateNewActionType(ActionTypeDTO actionTypeDTO);
+        public Task<IList<OperationTypeDTO>> GetAllActionTypes();
+        public Task<OperationTypeDTO> GetActionTypeById(long id);
+        public Task CreateNewActionType(OperationTypeDTO actionTypeDTO);
         public Task SetActionTypeEnabled(long id, bool enabled);
     }
 }

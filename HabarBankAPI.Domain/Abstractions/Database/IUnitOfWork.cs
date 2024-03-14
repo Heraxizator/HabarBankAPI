@@ -8,6 +8,7 @@ namespace HabarBankAPI.Domain.Abstractions.Database
 {
     public interface IUnitOfWork
     {
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<bool> Commit();
+        Task Rollback();
     }
 }

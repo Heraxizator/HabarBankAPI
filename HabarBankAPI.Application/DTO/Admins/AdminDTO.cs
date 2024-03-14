@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HabarBankAPI.Application.DTO
+﻿namespace HabarBankAPI.Application.DTO.Admins
 {
     public class AdminDTO
     {
-        public long AccountId { get; set; }
-        public string AccountLogin { get; set; }
-        public string AccountPassword { get; set; }
-        public string AccountPhone { get; set; }
-        public string AccountName { get; set; }
-        public string AccountSurname { get; set; }
-        public string AccountPatronymic { get; set; }
+        public long AdminId { get; set; }
+        public required string AccountLogin { get; set; }
+        public required string AccountPassword { get; set; }
+        public required string AccountPhone { get; set; }
+        public required string AccountName { get; set; }
+        public required string AccountSurname { get; set; }
+        public required string AccountPatronymic { get; set; }
+        public bool Enabled { get; set; }
     }
 }

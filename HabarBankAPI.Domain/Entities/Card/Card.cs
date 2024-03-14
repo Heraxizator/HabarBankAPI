@@ -1,25 +1,35 @@
-﻿using HabarBankAPI.Domain.Share;
+﻿using HabarBankAPI.Domain.Exceptions.Card;
+using HabarBankAPI.Domain.Share;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HabarBankAPI.Domain.Entities.Card
+namespace HabarBankAPI.Domain.Entities
 {
-    public class Card : Substance.Substance, IAggregateRoot
+    public class Card : Substance, IAggregateRoot
     {
         public Card() { }
-
-        public Card(long cardVariantId, int rublesCount, string imagePath, bool cardEnabled)
+        public Card(CardVariant? cardVariant, int rublesCount, string imagePath, User? user, bool cardEnabled)
         {
-            this.CardVariantId = cardVariantId;
+            this.CardVariant = cardVariant;
             this.RublesCount = rublesCount;
             this.ImagePath = imagePath;
+            this.User = user;
             this.Enabled = cardEnabled;
         }
 
-        public long CardVariantId { get; private init; }
-        public string ImagePath { get; private set; }
+        [Key]
+        public long CardId { get; private init; }
+        public string? ImagePath { get; private set; }
+        public CardVariant CardVariant { get; private init; }
 
-        public void SetPercentages(int percentage)
+        public void SetPercentages()
         {
-            this.RublesCount += (int)(this.RublesCount * percentage * 0.01);
+            if (this.CardVariant is null)
+            {
+                throw new CardVariantNotFoundException("Вариант карты не может иметь значение null");
+            }
+
+            this.RublesCount += (int)(this.RublesCount * this.CardVariant.Percentage * 0.01);
         }
 
         public void IncreaseRublesCount(int rublesCount)

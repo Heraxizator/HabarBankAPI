@@ -1,5 +1,4 @@
-﻿using HabarBankAPI.Domain.Entities.Substance;
-using HabarBankAPI.Domain.Share;
+﻿using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,11 +8,12 @@ using System.Threading.Tasks;
 
 namespace HabarBankAPI.Domain.Entities.ValutaBill
 {
-    public class ValutaScore : Substance.Substance, IAggregateRoot
+    public class ValutaScore : Substance, IAggregateRoot
     {
         public ValutaScore() { }
 
+        [Key]
         public long ValutaScoreId { get; private set; }
-        public long ValutaScoreVariantId { get; private set; }
+        public ValutaScoreVariant? ValutaScoreVariant { get; private set; }
     }
 }

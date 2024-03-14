@@ -9,6 +9,9 @@
   <ItemGroup>
     <Folder Include="Abstractions\Services\" />
     <Folder Include="Enums\" />
+    <Folder Include="Exceptions\Admin\" />
+    <Folder Include="Specifications\Sending\" />
+    <Folder Include="Specifications\Substance\" />
     <Folder Include="ValueObjects\" />
   </ItemGroup>
 

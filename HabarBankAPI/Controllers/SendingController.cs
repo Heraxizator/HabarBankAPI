@@ -4,9 +4,10 @@ using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities.Substance;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Entities.Transfer;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Uow;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HabarBankAPI.Web.Controllers
@@ -23,13 +24,19 @@ namespace HabarBankAPI.Web.Controllers
 
             GenericRepository<Sending> sendingRepositoty = new(context);
 
-            GenericRepository<Substance> substanceRepository = new(context);
+            GenericRepository<Card> cardsRepository = new(context);
+
+            GenericRepository<User> usersRepository = new(context);
+
+            GenericRepository<OperationType> operationTypesRepository = new(context);
+
+            UnitOfWork unitOfWork = new(context);
 
             Mapper mapperA = AbstractMapper<SendingDTO, Sending>.MapperA;
 
             Mapper mapperB = AbstractMapper<Sending, SendingDTO>.MapperA;
 
-            this._service = new SendingService(mapperA, mapperB, sendingRepositoty, substanceRepository);
+            this._service = new SendingService(mapperA, mapperB, sendingRepositoty, cardsRepository, usersRepository, operationTypesRepository, unitOfWork);
         }
 
 
@@ -54,7 +61,7 @@ namespace HabarBankAPI.Web.Controllers
         {
             await this._service.CreateTransfer(sendingDTO);
 
-            long sendingId = (await this._service.GetTransfersBySubstanceId(sendingDTO.SubstanceId)).Max(x => x.ActionId);
+            long sendingId = (await this._service.GetTransfersBySubstanceId(sendingDTO.SubstanceId)).Max(x => x.SendingId);
 
             SendingDTO sending = await this._service.GetTransferByTransferId(sendingId);
 

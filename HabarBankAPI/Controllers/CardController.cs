@@ -7,9 +7,8 @@ using HabarBankAPI.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Domain.Entities;
-using HabarBankAPI.Domain.Entities.Card;
-using HabarBankAPI.Domain.Entities.Substance;
 using HabarBankAPI.Application.DTO.Account;
+using HabarBankAPI.Infrastructure.Uow;
 
 namespace HabarBankAPI.Web.Controllers
 {
@@ -19,8 +18,9 @@ namespace HabarBankAPI.Web.Controllers
     {
 
         private readonly GenericRepository<Card> _cards_repository;
-        private readonly GenericRepository<Account> _users_repository;
+        private readonly GenericRepository<User> _users_repository;
         private readonly GenericRepository<Substance> _entities_repository;
+        private readonly GenericRepository<CardVariant> _cardvariant_repository;
 
         private readonly CardService _service;
         private readonly Mapper _card_mapperA;
@@ -39,12 +39,16 @@ namespace HabarBankAPI.Web.Controllers
 
             this._cards_repository = new GenericRepository<Card>(context);
 
-            this._users_repository = new GenericRepository<Account>(context);
+            this._users_repository = new GenericRepository<User>(context);
 
             this._entities_repository = new GenericRepository<Substance>(context);
 
+            this._cardvariant_repository = new GenericRepository<CardVariant>(context);
+
+            UnitOfWork unitOfWork = new(context);
+
             this._service = new CardService(
-                _card_mapperA, _card_mapperB, _user_mapper, _cards_repository, _users_repository, _entities_repository);
+                _card_mapperA, _card_mapperB, _user_mapper, _cards_repository, _users_repository, _entities_repository, _cardvariant_repository, unitOfWork);
         }
 
         [HttpGet]
@@ -68,7 +72,7 @@ namespace HabarBankAPI.Web.Controllers
         {
             await this._service.CreateCard(user_id, cardDTO);
 
-            long cardId = (await this._service.GetCardsByUserId(user_id)).Max(x => x.SubstanceId);
+            long cardId = (await this._service.GetCardsByUserId(user_id)).Max(x => x.CardId);
 
             CardDTO card = await this._service.GetCardData(cardId);
 

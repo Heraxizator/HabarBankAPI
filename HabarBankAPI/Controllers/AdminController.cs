@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using HabarBankAPI.Application.DTO;
 using HabarBankAPI.Application.DTO.Account;
 using HabarBankAPI.Application.DTO.Accounts;
+using HabarBankAPI.Application.DTO.Admins;
 using HabarBankAPI.Application.DTO.Users;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
@@ -9,8 +9,8 @@ using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
 using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Entities.Admin;
-using HabarBankAPI.Domain.Entities.User;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Uow;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -30,11 +30,13 @@ namespace HabarBankAPI.Controllers
         {
             ApplicationDbContext context = new();
 
-            this._mapper = AbstractMapper<UserDTO, User>.MapperB;
+            this._mapper = AbstractMapper<AdminDTO, Admin>.MapperB;
 
             this._admins_repository = new GenericRepository<Admin>(context);
 
-            this._service = new AdminService(_mapper, _admins_repository);
+            UnitOfWork unitOfWork = new(context);
+
+            this._service = new AdminService(_mapper, _admins_repository, unitOfWork);
         }
 
         [HttpGet]
@@ -66,7 +68,7 @@ namespace HabarBankAPI.Controllers
         {
             await this._service.CreateAdminAccount(adminDTO);
 
-            long adminId = (await this._service.GetAccountsList(int.MaxValue)).Max(x => x.AccountId);
+            long adminId = (await this._service.GetAccountsList(int.MaxValue)).Max(x => x.AdminId);
 
             AdminDTO admin = await this._service.GetAccountById(adminId);
 

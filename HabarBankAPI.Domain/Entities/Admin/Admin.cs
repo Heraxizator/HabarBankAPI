@@ -1,28 +1,24 @@
-﻿using HabarBankAPI.Domain.Entities;
-using HabarBankAPI.Domain.Share;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using HabarBankAPI.Domain.Share;
+using System.ComponentModel.DataAnnotations;
 
 namespace HabarBankAPI.Domain.Entities.Admin
 {
     public class Admin : Account, IAggregateRoot
     {
         public Admin() { }
-
-        public Admin(string AccountLogin, string AccountPassword,
-            string AccountPhone, string AccountName, string AccountSurname,
-            string AccountPatronymic, bool AccountEnabled)
+        public Admin(string accountLogin, string accountPassword, string accountPhone,
+            string accountName, string accountSurname, string accountPatronymic, bool accountEnabled) 
         {
-            this.AccountLogin = AccountLogin;
-            this.AccountPassword = AccountPassword;
-            this.AccountPhone = AccountPhone;
-            this.AccountName = AccountName;
-            this.AccountSurname = AccountSurname;
-            this.AccountPatronymic = AccountPatronymic;
-            Enabled = AccountEnabled;
+            this.AccountLogin = accountLogin;
+            this.AccountPassword = accountPassword;
+            this.AccountPhone = accountPhone;
+            this.AccountName = accountName;
+            this.AccountSurname = accountSurname;
+            this.AccountPatronymic = accountPatronymic;
+            this.Enabled = accountEnabled;
         }
+
+        [Key]
+        public long AdminId { get; private init; }
     }
 }

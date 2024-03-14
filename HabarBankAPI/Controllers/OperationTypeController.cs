@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
-using HabarBankAPI.Application.DTO.Actions;
+using HabarBankAPI.Application;
 using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities.Operation;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Uow;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HabarBankAPI.Web.Controllers
@@ -23,39 +24,41 @@ namespace HabarBankAPI.Web.Controllers
         {
             ApplicationDbContext context = new();
 
-            IGenericRepository<ActionType> repository = new GenericRepository<ActionType>(context);
+            IGenericRepository<OperationType> repository = new GenericRepository<OperationType>(context);
 
-            Mapper mapperA = AbstractMapper<ActionTypeDTO, ActionType>.MapperA;
+            UnitOfWork unitOfWork = new(context);
 
-            Mapper mapperB = AbstractMapper<ActionTypeDTO, ActionType>.MapperB;
+            Mapper mapperA = AbstractMapper<OperationTypeDTO, OperationType>.MapperA;
 
-            this._service = new ActionTypeService(repository, mapperA, mapperB);
+            Mapper mapperB = AbstractMapper<OperationTypeDTO, OperationType>.MapperB;
+
+            this._service = new ActionTypeService(repository, unitOfWork, mapperA, mapperB);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ActionTypeDTO>>> GetAllActionTypes()
+        public async Task<ActionResult<IEnumerable<OperationTypeDTO>>> GetAllActionTypes()
         {
-            IList<ActionTypeDTO> actionTypeDTOs = await _service.GetAllActionTypes();
+            IList<OperationTypeDTO> actionTypeDTOs = await _service.GetAllActionTypes();
 
             return Ok(actionTypeDTOs);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ActionTypeDTO>> GetActionTypeById(int id)
+        public async Task<ActionResult<OperationTypeDTO>> GetActionTypeById(int id)
         {
-            ActionTypeDTO actionTypeDTO = await _service.GetActionTypeById(id);
+            OperationTypeDTO actionTypeDTO = await _service.GetActionTypeById(id);
 
             return Ok(actionTypeDTO);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ActionTypeDTO>> AddActionType([FromBody] ActionTypeDTO actionTypeDTO)
+        public async Task<ActionResult<OperationTypeDTO>> AddActionType([FromBody] OperationTypeDTO actionTypeDTO)
         {
             await _service.CreateNewActionType(actionTypeDTO);
 
-            long actionTypeId = (await this._service.GetAllActionTypes()).Max(x => x.ActionTypeId);
+            long actionTypeId = (await this._service.GetAllActionTypes()).Max(x => x.OperationTypeId);
 
-            ActionTypeDTO actionType = await this._service.GetActionTypeById(actionTypeId);
+            OperationTypeDTO actionType = await this._service.GetActionTypeById(actionTypeId);
 
             return actionType;
         }

@@ -1,15 +1,16 @@
 ﻿using AutoMapper;
 using HabarBankAPI.Application.DTO;
 using HabarBankAPI.Application.DTO.Account;
+using HabarBankAPI.Application.DTO.AccountLevels;
 using HabarBankAPI.Application.DTO.Accounts;
 using HabarBankAPI.Application.DTO.Users;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities.AccountLevel;
-using HabarBankAPI.Domain.Entities.User;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Uow;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -20,11 +21,15 @@ namespace HabarBankAPI.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IGenericRepository<User> _users_repository;
-        private readonly IGenericRepository<AccountLevel> _levels_repository;
+        private readonly GenericRepository<User> _users_repository;
+        private readonly GenericRepository<UserLevel> _levels_repository;
             
-        private readonly UserService _service;
+        private readonly UserService _user_service;
+        private readonly UserLevelService _userlevel_service;
+
         private readonly Mapper _mapper;
+        private readonly Mapper _mapperA;
+        private readonly Mapper _mapperB;
 
         public UserController()
         {
@@ -32,17 +37,25 @@ namespace HabarBankAPI.Controllers
 
             this._mapper = AbstractMapper<UserDTO, User>.MapperB;
 
+            this._mapperA = AbstractMapper<AccountLevelDTO, UserLevel>.MapperB;
+
+            this._mapperB = AbstractMapper<AccountLevelDTO, UserLevel>.MapperA;
+
             this._users_repository = new GenericRepository<User>(context);
 
-            this._levels_repository = new GenericRepository<AccountLevel>(context);
+            this._levels_repository = new GenericRepository<UserLevel>(context);
 
-            this._service = new UserService(_mapper, _users_repository, _levels_repository);
+            UnitOfWork unitOfWork = new(context);
+
+            this._user_service = new UserService(_mapper, _users_repository, _levels_repository, unitOfWork);
+
+            this._userlevel_service = new UserLevelService(_levels_repository, unitOfWork, _mapperA, _mapperB);
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserDTO>>> TakeUsers(int count)
         {
-            IList<UserDTO> userDTOs = await _service.GetAccountsList(count);
+            IList<UserDTO> userDTOs = await _user_service.GetAccountsList(count);
 
             return Ok(userDTOs);
         }
@@ -50,7 +63,7 @@ namespace HabarBankAPI.Controllers
         [HttpGet("auth")]
         public async Task<ActionResult<UserDTO>> GetUserByLoginAndPassword(string login, string password)
         {
-            UserDTO userDTO = await _service.GetAuthTokenByData(login, password);
+            UserDTO userDTO = await _user_service.GetAuthTokenByData(login, password);
 
             return userDTO;
         }
@@ -58,7 +71,7 @@ namespace HabarBankAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> GetUserById(long id)
         {
-            UserDTO userDTOs = await _service.GetAccountById(id);
+            UserDTO userDTOs = await _user_service.GetAccountById(id);
 
             return userDTOs;
         }
@@ -66,21 +79,27 @@ namespace HabarBankAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<UserDTO>> AddNewUser([FromBody] UserDTO userDTO)
         {
-            await this._service.CreateUserAccount(userDTO);
+            await this._user_service.CreateUserAccount(userDTO);
 
-            long userId = (await this._service.GetAccountsList(int.MaxValue)).Max(x => x.AccountId);
+            long userId = (await this._user_service.GetAccountsList(int.MaxValue)).Max(x => x.UserId);
 
-            UserDTO user = await this._service.GetAccountById(userId);
+            UserDTO user = await this._user_service.GetAccountById(userId);
 
             return user;
         }
 
         [HttpPut("{id}/status")]
-        public async Task<ActionResult> EditUserStatus(long id, [FromBody] StatusDTO userStatusDTO)
+        public async Task<ActionResult> EditUserStatus(long id, long levelId)
         {
-            await this._service.EditAccountStatus(id, null);
+            await this._user_service.EditAccountStatus(id, levelId);
 
-            await this._service.EditAccountEnabled(id, userStatusDTO.UserEnabled);
+            return NoContent();
+        }
+
+        [HttpPut("{id}/enabled")]
+        public async Task<ActionResult> EditUserEnabled(long id, bool enabled)
+        {
+            await this._user_service.EditAccountEnabled(id, enabled);
 
             return NoContent();
         }
@@ -88,7 +107,7 @@ namespace HabarBankAPI.Controllers
         [HttpPut("{id}/profile")]
         public async Task<ActionResult> EditUserProfile(long id, [FromBody] ProfileDTO userProfileDTO)
         {
-            await this._service.EditAccountProfile(id, userProfileDTO);
+            await this._user_service.EditAccountProfile(id, userProfileDTO);
 
             return NoContent();
         }
@@ -96,7 +115,7 @@ namespace HabarBankAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> RemoveUserById(long id)
         {
-            await this._service.EditAccountEnabled(id, false);
+            await this._user_service.EditAccountEnabled(id, false);
 
             return NoContent();
         }

@@ -2,8 +2,9 @@
 using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities.Card;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Exceptions.Card;
+using HabarBankAPI.Infrastructure.Uow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,19 @@ namespace HabarBankAPI.Application.Services
     public class CardTypeService : ICardTypeService
     {
         private readonly IGenericRepository<CardType> _repository;
+        private readonly UnitOfWork _unitOfWork;
+
         private readonly Mapper _mapperA;
         private readonly Mapper _mapperB;
 
-        public CardTypeService(IGenericRepository<CardType> repository, Mapper mapperA, Mapper mapperB) 
+        public CardTypeService(
+            IGenericRepository<CardType> repository,
+            UnitOfWork unitOfWork,
+            Mapper mapperA,
+            Mapper mapperB) 
         {
             this._repository = repository;
+            this._unitOfWork = unitOfWork;
             this._mapperA = mapperA;
             this._mapperB = mapperB;
         }
@@ -30,6 +38,8 @@ namespace HabarBankAPI.Application.Services
             CardType cardType = this._mapperA.Map<CardType>(cardTypeDTO);
 
             await Task.Run(() => this._repository.Create(cardType));
+
+            await this._unitOfWork.Commit();
         }
 
         public async Task<IList<CardTypeDTO>> GetAllCardTypes()
@@ -64,6 +74,8 @@ namespace HabarBankAPI.Application.Services
             cardType.SetEnabled(enabled);
 
             await Task.Run(() => this._repository.Update(cardType));
+
+            await this._unitOfWork.Commit();
         }
     }
 }

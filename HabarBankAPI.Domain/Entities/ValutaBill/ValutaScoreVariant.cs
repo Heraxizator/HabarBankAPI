@@ -7,23 +7,22 @@ namespace HabarBankAPI.Domain.Entities.ValutaBill
     {
         public ValutaScoreVariant() { }
 
-        public ValutaScoreVariant(string name, string text, Valuta valuta, int percentage, long accountLevelId, bool enabled)
+        public ValutaScoreVariant(string name, string text, Valuta? valuta, int percentage, UserLevel? accountLevel, bool enabled)
         {
             this.Name = name;
             this.Text = text;
             this.Valuta = valuta;
             this.Percentage = percentage;
-            this.AccountLevelId = accountLevelId;
+            this.AccountLevel = accountLevel;
             this.Enabled = enabled;
         }
 
         [Key]
-        public long ValutaScorevariantId { get; private set; }
-        public string Name { get; private set; }
-        public string Text { get; private set; }
-        public Valuta Valuta { get; private set; }
+        public long ValutaScoreVariantId { get; private set; }
+        public string? Name { get; private set; }
+        public string? Text { get; private set; }
+        public Valuta? Valuta { get; private set; }
         public int Percentage { get; private set; }
-        public long AccountLevelId { get; private set; }
-        public new bool Enabled { get; private set; }
+        public UserLevel? AccountLevel { get; private set; }
     }
 }

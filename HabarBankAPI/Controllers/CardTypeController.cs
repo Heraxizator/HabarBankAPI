@@ -5,8 +5,9 @@ using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities.Card;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Uow;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HabarBankAPI.Web.Controllers
@@ -24,11 +25,13 @@ namespace HabarBankAPI.Web.Controllers
 
             IGenericRepository<CardType> repository = new GenericRepository<CardType>(context);
 
+            UnitOfWork unitOfWork = new(context);
+
             Mapper mapperA = AbstractMapper<CardTypeDTO, CardType>.MapperA;
 
             Mapper mapperB = AbstractMapper<CardTypeDTO, CardType>.MapperB;
 
-            _service = new CardTypeService(repository, mapperA, mapperB);
+            _service = new CardTypeService(repository, unitOfWork, mapperA, mapperB);
         }
 
         [HttpGet]

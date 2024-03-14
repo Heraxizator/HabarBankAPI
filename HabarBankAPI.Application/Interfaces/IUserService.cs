@@ -2,7 +2,7 @@
 using HabarBankAPI.Application.DTO.Account;
 using HabarBankAPI.Application.DTO.Accounts;
 using HabarBankAPI.Application.DTO.Users;
-using HabarBankAPI.Domain.Entities.AccountLevel;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ namespace HabarBankAPI.Application.Interfaces
         Task<UserDTO> GetAuthTokenBySMS(string phone, string sms);
         Task<IList<UserDTO>> GetAccountsList(int count);
         Task EditAccountEnabled(long id, bool enabled);
-        Task EditAccountStatus(long id, AccountLevel level);
+        Task EditAccountStatus(long id, UserLevel level);
         Task EditAccountProfile(long id, ProfileDTO profileDTO);
     }
 }

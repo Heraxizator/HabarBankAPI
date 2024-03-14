@@ -1,37 +1,49 @@
-﻿using HabarBankAPI.Domain.Entities;
+﻿using HabarBankAPI.Domain.Entities.ValutaBill;
+using HabarBankAPI.Domain.Exceptions.AccountLevel;
 using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HabarBankAPI.Domain.Entities.User
+namespace HabarBankAPI.Domain.Entities
 {
     public class User : Account, IAggregateRoot
     {
         public User() { }
 
-        public User(string AccountLogin, string AccountPassword,
-            string AccountPhone, string AccountName, string AccountSurname,
-            string AccountPatronymic, long AccountLevelId, bool AccountEnabled)
+        public User(string? userLogin, string? userPassword, string? userPhone,
+            string? userName, string? userSurname, string? userPatronymic,
+            UserLevel? userLevel, bool userEnabled) 
         {
-            this.AccountLogin = AccountLogin;
-            this.AccountPassword = AccountPassword;
-            this.AccountPhone = AccountPhone;
-            this.AccountName = AccountName;
-            this.AccountSurname = AccountSurname;
-            this.AccountPatronymic = AccountPatronymic;
-            this.AccountLevelId = AccountLevelId;
-            Enabled = AccountEnabled;
+            this.AccountLogin = userLogin;
+            this.AccountPassword = userPassword;
+            this.AccountPhone = userPhone;
+            this.AccountName = userName;
+            this.AccountSurname = userSurname;
+            this.AccountPatronymic = userPatronymic;
+            this.Enabled = userEnabled;
+            this.UserLevel = userLevel;
         }
 
-        public long AccountLevelId { get; private set; }
+        [Key]
+        public long UserId { get; private init; }
+        public UserLevel UserLevel { get; private set; }
+        public ICollection<Card> Cards { get; set; }
+        public ICollection<MetalScore> MetalScores { get; set; }
+        public ICollection<ValutaScore> ValutaScores { get; set; }
 
-        public void SetUserStatus(long accountLevelId)
+        public void SetUserStatus(UserLevel? userLevel)
         {
-            AccountLevelId = accountLevelId;
+            if (userLevel is null)
+            {
+                throw new AccountLevelNotFoundException("Уровень аккаунта не может иметь значение null");
+            }
+
+            this.UserLevel = userLevel;
         }
 
     }

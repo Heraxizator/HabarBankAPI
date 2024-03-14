@@ -13,7 +13,7 @@ namespace HabarBankAPI.Application.DTO.Cards
         public string Text { get; set; }
         public int Percentage { get; set; }
         public long CardTypeId { get; set; }
-        public long AccountLevelId { get; set; }
+        public long UserLevelId { get; set; }
         public bool Enabled { get; set; }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using HabarBankAPI.Domain.Entities;
-using HabarBankAPI.Domain.Entities.User;
 using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
@@ -17,6 +16,6 @@ namespace HabarBankAPI.Domain.Factories
         IUserFactory WithName(string name);
         IUserFactory WithSurname(string surname);
         IUserFactory WithPatronymic(string patronymic);
-        IUserFactory WithAccountLevelId(long accountLevelId);
+        IUserFactory WithAccountLevel(UserLevel? accountLevel);
     }
 }

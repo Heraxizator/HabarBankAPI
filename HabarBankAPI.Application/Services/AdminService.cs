@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using HabarBankAPI.Application.DTO;
 using HabarBankAPI.Application.DTO.Accounts;
 using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain.Abstractions.Repositories;
@@ -15,6 +14,8 @@ using HabarBankAPI.Domain.Exceptions.Account;
 using HabarBankAPI.Domain.Exceptions.AccountLevel;
 using HabarBankAPI.Domain.Factories;
 using HabarBankAPI.Domain.Entities.Admin;
+using HabarBankAPI.Infrastructure.Uow;
+using HabarBankAPI.Application.DTO.Admins;
 
 namespace HabarBankAPI.Application.Services
 {
@@ -22,36 +23,32 @@ namespace HabarBankAPI.Application.Services
     {
         private readonly Mapper _mapper;
         private readonly IGenericRepository<Admin> _admins_repository;
+        private readonly UnitOfWork _unitOfWork;
 
         public AdminService(Mapper mapper,
-            IGenericRepository<Admin> adminsRepository)
+            IGenericRepository<Admin> adminsRepository,
+            UnitOfWork unitOfWork)
         {
             this._mapper = mapper;
             this._admins_repository = adminsRepository;
+            this._unitOfWork = unitOfWork;
         }
 
         public async Task CreateAdminAccount(AdminDTO adminDTO)
         {
             AdminFactory adminFactory = new();
 
-            adminFactory.WithLogin(adminDTO.AccountLogin);
-
-            adminFactory.WithPassword(adminDTO.AccountPassword);
-
-            adminFactory.WithPhone(adminDTO.AccountPhone);
-
-            adminFactory.WithName(adminDTO.AccountName);
-
-            adminFactory.WithSurname(adminDTO.AccountSurname);
-
-            adminFactory.WithPatronymic(adminDTO.AccountPatronymic);
-
-            Admin admin = adminFactory.Build();
-
-            AuthByDataSpecification authByDataSpecification = new();
+            Admin admin = adminFactory
+                .WithLogin(adminDTO.AccountLogin)
+                .WithPassword(adminDTO.AccountPassword)
+                .WithPhone(adminDTO.AccountPhone)
+                .WithName(adminDTO.AccountName)
+                .WithSurname(adminDTO.AccountSurname)
+                .WithPatronymic(adminDTO.AccountPatronymic)
+            .Build();
 
             IList<Admin> admins = await Task.Run(() => this._admins_repository.Get(
-                    x => authByDataSpecification.IsSatisfiedBy((x, admin.AccountLogin, admin.AccountPassword))).ToList());
+                    admin => admin.AccountLogin == adminDTO.AccountLogin && admin.AccountPassword == adminDTO.AccountPassword && admin.Enabled is true).ToList());
 
             if (admins.Any())
             {
@@ -60,13 +57,13 @@ namespace HabarBankAPI.Application.Services
 
             await Task.Run(
                 () => _admins_repository.Create(admin));
+
+            await this._unitOfWork.Commit();
         }
 
         public async Task EditAccountEnabled(long id, bool enabled)
         {
-            AccountByIdSpecification specification = new();
-
-            Admin? admin = this._admins_repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault();
+            Admin? admin = this._admins_repository.Get(admin => admin.AdminId == id && admin.Enabled is true).FirstOrDefault();
 
             if (admin is null)
             {
@@ -77,13 +74,13 @@ namespace HabarBankAPI.Application.Services
 
             await Task.Run(
                 () => this._admins_repository.Update(admin));
+
+            await this._unitOfWork.Commit();
         }
 
         public async Task EditAccountProfile(long id, ProfileDTO profileDTO)
         {
-            AccountByIdSpecification specification = new();
-
-            Admin? admin = this._admins_repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault();
+            Admin? admin = this._admins_repository.Get(admin => admin.AdminId == id && admin.Enabled is true).FirstOrDefault();
 
             if (admin is null)
             {
@@ -95,14 +92,14 @@ namespace HabarBankAPI.Application.Services
 
             await Task.Run(
                 () => _admins_repository.Update(admin));
+
+            await this._unitOfWork.Commit();
         }
 
         public async Task<AdminDTO> GetAccountById(long id)
         {
-            AccountByIdSpecification specification = new();
-
             Admin? admin = await Task.Run(
-                () => this._admins_repository.Get(x => specification.IsSatisfiedBy((x, id))).FirstOrDefault());
+                () => this._admins_repository.Get(admin => admin.AdminId == id && admin.Enabled is true).FirstOrDefault());
 
             AdminDTO adminDTO = _mapper.Map<AdminDTO>(admin);
 
@@ -111,10 +108,8 @@ namespace HabarBankAPI.Application.Services
 
         public async Task<IList<AdminDTO>> GetAccountsList(int count)
         {
-            AccountsListSpecification specification = new();
-
             IList<Admin> admins = await Task.Run(
-                () => _admins_repository.Get(x => specification.IsSatisfiedBy(x)).Take(count).ToList());
+                () => _admins_repository.Get(admin => admin.Enabled is true).Take(count).ToList());
 
             IList<AdminDTO> adminDTOs = _mapper.Map<IList<AdminDTO>>(admins);
 
@@ -123,10 +118,8 @@ namespace HabarBankAPI.Application.Services
 
         public async Task<AdminDTO> GetAuthTokenByData(string login, string password)
         {
-            AuthByDataSpecification specification = new();
-
             IList<Admin> admins = await Task.Run(
-                () => _admins_repository.Get(x => specification.IsSatisfiedBy((x, login, password))).ToList());
+                () => _admins_repository.Get(admin => admin.AccountLogin == login && admin.AccountPassword == password && admin.Enabled is true).ToList());
 
             if (admins.Count > 1)
             {

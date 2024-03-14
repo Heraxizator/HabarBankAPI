@@ -1,4 +1,4 @@
-﻿using HabarBankAPI.Domain.Entities.Card;
+﻿using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,8 @@ namespace HabarBankAPI.Domain.Factories
 {
     public interface ICardFactory : IFactory<Card>
     {
-        ICardFactory WithCardVariantId(long cardVariantId);
+        ICardFactory WithCardVariant(CardVariant? cardVariant);
+        ICardFactory WithCardUser(User? user);
         ICardFactory WithRublesCount(int rublesCount);
         ICardFactory WithImagePath(string imagePath);
     }

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
-using HabarBankAPI.Application.DTO.Actions;
 using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Domain.Abstractions.Repositories;
-using HabarBankAPI.Domain.Entities.Operation;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Exceptions.Action;
+using HabarBankAPI.Infrastructure.Uow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,57 +14,67 @@ namespace HabarBankAPI.Application.Services
 {
     public class ActionTypeService : IActionTypeService
     {
-        private readonly IGenericRepository<ActionType> _repository;
+        private readonly IGenericRepository<OperationType> _repository;
+        private readonly UnitOfWork _unitOfWork;
         private readonly Mapper _mapperA;
         private readonly Mapper _mapperB;
 
-        public ActionTypeService(IGenericRepository<ActionType> repository, Mapper mapperA, Mapper mapperB)
+        public ActionTypeService(
+            IGenericRepository<OperationType> repository,
+            UnitOfWork unitOfWork,
+            Mapper mapperA,
+            Mapper mapperB)
         {
             this._repository = repository;
+            this._unitOfWork = unitOfWork;
             this._mapperA = mapperA;
             this._mapperB = mapperB;
         }
 
-        public async Task CreateNewActionType(ActionTypeDTO actionTypeDTO)
+        public async Task CreateNewActionType(OperationTypeDTO actionTypeDTO)
         {
-            ActionType actionType = this._mapperA.Map<ActionType>(actionTypeDTO);
+            OperationType actionType = this._mapperA.Map<OperationType>(actionTypeDTO);
 
             await Task.Run(() => this._repository.Create(actionType));
+
+            await this._unitOfWork.Commit();
         }
 
-        public async Task<ActionTypeDTO> GetActionTypeById(long id)
+        public async Task<OperationTypeDTO> GetActionTypeById(long id)
         {
-            ActionType? actionType = await Task.Run(
-                () => this._repository.Get(x => x.ActionTypeId == id && x.Enabled is true).FirstOrDefault());
+            OperationType? actionType = await Task.Run(
+                () => this._repository.Get(actionType => actionType.OperationTypeId == id && actionType.Enabled is true).FirstOrDefault());
 
-            ActionTypeDTO actionTypeDTO = this._mapperB.Map<ActionTypeDTO>(actionType);
+            OperationTypeDTO actionTypeDTO = this._mapperB.Map<OperationTypeDTO>(actionType);
 
             return actionTypeDTO;
         }
 
-        public async Task<IList<ActionTypeDTO>> GetAllActionTypes()
+        public async Task<IList<OperationTypeDTO>> GetAllActionTypes()
         {
-            IList<ActionType> actionTypes = await Task.Run(
-                () => this._repository.Get(x => x.Enabled is true).ToList());
+            IList<OperationType> actionTypes = await Task.Run(
+                () => this._repository.Get(actionType => actionType.Enabled is true).ToList());
 
-            IList<ActionTypeDTO> actionTypeDTOs = this._mapperB.Map<IList<ActionTypeDTO>>(actionTypes);
+            IList<OperationTypeDTO> actionTypeDTOs = this._mapperB.Map<IList<OperationTypeDTO>>(actionTypes);
 
             return actionTypeDTOs;
         }
 
         public async Task SetActionTypeEnabled(long id, bool enabled)
         {
-            ActionType? actionType = await Task.Run(
-                () => this._repository.Get(x => x.ActionTypeId == id && x.Enabled is true).FirstOrDefault());
+            OperationType? actionType = await Task.Run(
+                () => this._repository.Get(actionType => actionType.OperationTypeId == id && actionType.Enabled is true).FirstOrDefault());
 
             if (actionType is null)
             {
-                throw new ActionTypeNotFoundException($"Тип операции с идентификатором {id} не найден");
+                throw new OperationTypeNotFoundException($"Тип операции с идентификатором {id} не найден");
             }
 
             actionType.SetEnabled(enabled);
 
             await Task.Run(() => this._repository.Update(actionType));
+
+            await this._unitOfWork.Commit();
         }
     }
 }

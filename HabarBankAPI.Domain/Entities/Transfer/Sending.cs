@@ -1,12 +1,11 @@
-﻿using HabarBankAPI.Domain.Entities.Operation;
-using HabarBankAPI.Domain.Share;
+﻿using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Action = HabarBankAPI.Domain.Entities.Operation.Action;
 
 namespace HabarBankAPI.Domain.Entities.Transfer
 {
@@ -14,16 +13,19 @@ namespace HabarBankAPI.Domain.Entities.Transfer
     {
         public Sending() { }
 
-        public Sending(long sendingId, int substanceSenderId, int substanceRecipientId, bool sendingEnabled)
+        public Sending(Card? cardSender, Card? cardRecipient, OperationType? operationType, int rublesCount, bool sendingEnabled)
         {
-            this.ActionId = sendingId;
-            this.SubstanceSenderId = substanceSenderId;
-            this.SubstanceRecipientId = substanceRecipientId;
+            this.CardSender = cardSender;
+            this.CardRecipient = cardRecipient;
+            this.OperationType = operationType;
+            this.RublesCount = rublesCount;
             this.Enabled = sendingEnabled;
         }
 
-        public long SubstanceSenderId { get; private init; }
-        public long SubstanceRecipientId { get; private init; }
+        [Key]
+        public long SendingId { get; private init; }
+        public Card CardSender { get; private init; }
+        public Card CardRecipient { get; private init; }
         public int RublesCount { get; private init; }
 
     }

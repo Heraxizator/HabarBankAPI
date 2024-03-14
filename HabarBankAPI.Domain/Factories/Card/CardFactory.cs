@@ -1,4 +1,5 @@
-﻿using HabarBankAPI.Domain.Entities.Card;
+﻿using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Exceptions.Account;
 using HabarBankAPI.Domain.Exceptions.Card;
 using HabarBankAPI.Domain.Specifications.Card;
 using System;
@@ -13,7 +14,8 @@ namespace HabarBankAPI.Domain.Factories
     {
         private string imagePath = string.Empty;
         private int rublesCount = default;
-        private long cardVariantId = default;
+        private CardVariant? cardVariant = default;
+        private User? user = default;
 
         public Card Build()
         {
@@ -31,17 +33,35 @@ namespace HabarBankAPI.Domain.Factories
                 throw new RublesCountArgumentException("Сумма в рублях должна быть больше ноля");
             }
 
+            if (this.cardVariant is null)
+            {
+                throw new CardVariantNotFoundException("Вариант карты не найден");
+            }
+ 
+            if (this.user is null)
+            {
+                throw new AccountNotFoundException("Пользователь карты не найден");
+            }
+
             return new Card
             (
-                this.cardVariantId,
+                this.cardVariant,
                 this.rublesCount,
-                this.imagePath, true
+                this.imagePath, 
+                this.user,
+                true
             );
         }
 
-        public ICardFactory WithCardVariantId(long cardVariantId)
+        public ICardFactory WithCardUser(User? user)
         {
-            this.cardVariantId = cardVariantId;
+            this.user = user;
+            return this;
+        }
+
+        public ICardFactory WithCardVariant(CardVariant? cardVariant)
+        {
+            this.cardVariant = cardVariant;
             return this;
         }
 

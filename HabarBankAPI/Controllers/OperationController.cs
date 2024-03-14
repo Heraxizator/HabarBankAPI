@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
-using HabarBankAPI.Application.DTO.Actions;
+using HabarBankAPI.Application;
 using HabarBankAPI.Application.DTO.Transfers;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
+using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Uow;
 using Microsoft.AspNetCore.Mvc;
-using Action = HabarBankAPI.Domain.Entities.Operation.Action;
 
 namespace HabarBankAPI.Web.Controllers
 {
@@ -14,45 +15,51 @@ namespace HabarBankAPI.Web.Controllers
     [ApiController]
     public class OperationController : ControllerBase
     {
-        private readonly ActionService _service;
+        private readonly OperationService _service;
 
         public OperationController()
         {
             ApplicationDbContext context = new();
 
-            GenericRepository<Action> repository = new(context);
+            GenericRepository<Operation> actionsRepository = new(context);
 
-            Mapper mapperA = AbstractMapper<ActionDTO, Action>.MapperA;
+            GenericRepository<OperationType> actionTypesRepository = new(context);
 
-            Mapper mapperB = AbstractMapper<Action, ActionDTO>.MapperA;
+            GenericRepository<Card> cardsRepository = new(context);
 
-            this._service = new ActionService(repository, mapperA, mapperB);
+            UnitOfWork unitOfWork = new(context);
+
+            Mapper mapperA = AbstractMapper<OperationDTO, Operation>.MapperA;
+
+            Mapper mapperB = AbstractMapper<Operation, OperationDTO>.MapperA;
+
+            this._service = new OperationService(actionsRepository, actionTypesRepository, cardsRepository, unitOfWork, mapperA, mapperB);
         }
 
         [HttpGet("{action-id}")]
-        public async Task<ActionResult<IList<ActionDTO>>> GetOperationByOperationId(int action_id)
+        public async Task<ActionResult<IList<OperationDTO>>> GetOperationByOperationId(int action_id)
         {
-            ActionDTO actionDTO = await this._service.GetActionByActionId(action_id);
+            OperationDTO actionDTO = await this._service.GetActionByActionId(action_id);
 
             return Ok(actionDTO);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IList<ActionDTO>>> GetOperationsByEntityId(long card_id)
+        public async Task<ActionResult<IList<OperationDTO>>> GetOperationsByEntityId(long card_id)
         {
-            IList<ActionDTO> actionDTOs = await this._service.GetActionsByEntityId(card_id);
+            IList<OperationDTO> actionDTOs = await this._service.GetActionsByEntityId(card_id);
 
             return Ok(actionDTOs);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ActionDTO>> AddNewOperation([FromBody] ActionDTO actionDTO)
+        public async Task<ActionResult<OperationDTO>> AddNewOperation([FromBody] OperationDTO actionDTO)
         {
             await this._service.CreateNewAction(actionDTO);
 
-            long actionId = (await this._service.GetAllActions(int.MaxValue)).Max(x => x.ActionId);
+            long actionId = (await this._service.GetAllActions(int.MaxValue)).Max(x => x.OperationId);
 
-            ActionDTO action = await this._service.GetActionByActionId(actionId);
+            OperationDTO action = await this._service.GetActionByActionId(actionId);
 
             return action;
         }
