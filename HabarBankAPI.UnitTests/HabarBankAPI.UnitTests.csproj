@@ -22,4 +22,13 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Domain\ValueObjects\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HabarBankAPI.Application\HabarBankAPI.Application.csproj" />
+    <ProjectReference Include="..\HabarBankAPI.Domain\HabarBankAPI.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

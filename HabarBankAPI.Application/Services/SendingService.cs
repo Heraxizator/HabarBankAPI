@@ -73,10 +73,6 @@ namespace HabarBankAPI.Application.Services
                 throw new SubstanceArgumentException("Сумма перевода должна быть больше нуля");
             }
 
-            senderCard.RublesCount -= sendingRubles;
-
-            recipientCard.RublesCount += sendingRubles;
-
             OperationType? operationType = this._operationtypes_repository.Get(
                 operationType => operationType.OperationTypeId == sendingDTO.OperationTypeId && operationType.Enabled is true).FirstOrDefault();
 
@@ -93,6 +89,8 @@ namespace HabarBankAPI.Application.Services
                 .WithOperationType(operationType)
                 .WithRublesCount(sendingDTO.RublesCount)
             .Build();
+
+            sending.RunSending();
 
             senderCard.Transfers.Clear();
 

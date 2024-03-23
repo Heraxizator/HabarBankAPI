@@ -1,4 +1,5 @@
-﻿using HabarBankAPI.Domain.Share;
+﻿using HabarBankAPI.Domain.Exceptions.Sending;
+using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -28,5 +29,15 @@ namespace HabarBankAPI.Domain.Entities.Transfer
         public Card CardRecipient { get; private init; }
         public int RublesCount { get; private init; }
 
+        public void RunSending()
+        {
+            if (this.CardSender.RublesCount < this.RublesCount)
+            {
+                throw new InvalidSendingException("Недостаточно средств для осуществления перевода");
+            }
+
+            this.CardSender.RublesCount -= this.RublesCount;
+            this.CardRecipient.RublesCount += this.RublesCount;
+        }
     }
 }

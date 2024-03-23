@@ -34,11 +34,21 @@ namespace HabarBankAPI.Domain.Entities
 
         public void IncreaseRublesCount(int rublesCount)
         {
+            if (rublesCount <= 0)
+            {
+                throw new RublesCountArgumentException("Нельзя начислить ноль и меньше рублей");
+            }
+
             this.RublesCount += rublesCount;
         }
 
         public void DecreaseRublesCount(int rublesCount)
         {
+            if (rublesCount <= 0)
+            {
+                throw new RublesCountArgumentException("Нельзя списать ноль и меньше рублей");
+            }
+
             this.RublesCount -= rublesCount;
         }
     }

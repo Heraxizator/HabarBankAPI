@@ -8,8 +8,8 @@ namespace HabarBankAPI.Domain.Entities
         public CardType() { }
         public CardType(string name, bool enabled)
         {
-            Name = name;
-            Enabled = enabled;
+            this.Name = name;
+            this.Enabled = enabled;
         }
 
         [Key]
