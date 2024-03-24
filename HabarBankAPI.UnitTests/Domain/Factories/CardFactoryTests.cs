@@ -13,7 +13,7 @@ namespace HabarBankAPI.UnitTests.Domain.Factories
 
             Exception exception = Record.Exception(() => cardFactory
                 .WithImagePath(string.Empty)
-                .WithCardUser(new User())
+                .WithCardUser(new HabarBankAPI.Domain.Entities.User())
                 .WithCardVariant(new CardVariant())
                 .WithRublesCount(1000)
                 .Build());
@@ -45,7 +45,7 @@ namespace HabarBankAPI.UnitTests.Domain.Factories
 
             Exception exception = Record.Exception(() => cardFactory
                 .WithImagePath("https://google.com")
-                .WithCardUser(new User())
+                .WithCardUser(new HabarBankAPI.Domain.Entities.User())
                 .WithCardVariant(null)
                 .WithRublesCount(1000)
                 .Build());
@@ -61,7 +61,7 @@ namespace HabarBankAPI.UnitTests.Domain.Factories
 
             Exception exception = Record.Exception(() => cardFactory
                 .WithImagePath("https://google.com")
-                .WithCardUser(new User())
+                .WithCardUser(new HabarBankAPI.Domain.Entities.User())
                 .WithCardVariant(new CardVariant())
                 .WithRublesCount(0)
                 .Build());
@@ -77,7 +77,7 @@ namespace HabarBankAPI.UnitTests.Domain.Factories
 
             Card card = cardFactory
                 .WithImagePath("https://google.com")
-                .WithCardUser(new User())
+                .WithCardUser(new HabarBankAPI.Domain.Entities.User())
                 .WithCardVariant(new CardVariant())
                 .WithRublesCount(1000)
                 .Build();

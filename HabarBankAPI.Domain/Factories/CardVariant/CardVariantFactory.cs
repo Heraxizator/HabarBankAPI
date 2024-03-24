@@ -1,4 +1,6 @@
 ﻿using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Exceptions.AccountLevel;
+using HabarBankAPI.Domain.Exceptions.Card;
 using HabarBankAPI.Domain.Exceptions.CardVariant;
 using HabarBankAPI.Domain.Specifications.CardVariant;
 using System;
@@ -38,6 +40,16 @@ namespace HabarBankAPI.Domain.Factories
             if (cardVariantPercentageSpecification.IsSatisfiedBy(this._percentageCount) is false)
             {
                 throw new BadVariantPercentageException("Процент должен быть не меньше нуля");
+            }
+
+            if (this._userLevel is null)
+            {
+                throw new AccountLevelNotFoundException("Уровень пользователя не найден");
+            }
+
+            if (this._cardType is null)
+            {
+                throw new CardTypeNotFoundException("Тип карты не найден");
             }
 
             CardVariant cardVariant = new

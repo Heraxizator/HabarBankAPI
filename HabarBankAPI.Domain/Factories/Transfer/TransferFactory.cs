@@ -55,19 +55,19 @@ namespace HabarBankAPI.Domain.Factories.Transfer
             return this;
         }
 
-        public ITransferFactory WithCardRecipient(Card cardRecipient)
+        public ITransferFactory WithCardRecipient(Card? cardRecipient)
         {
             this._cardRecipient = cardRecipient;
             return this;
         }
 
-        public ITransferFactory WithCardSender(Card cardSender)
+        public ITransferFactory WithCardSender(Card? cardSender)
         {
             this._cardSender = cardSender;
             return this;
         }
 
-        public ITransferFactory WithOperationType(OperationType operationType)
+        public ITransferFactory WithOperationType(OperationType? operationType)
         {
             this._operationType = operationType;
             return this;

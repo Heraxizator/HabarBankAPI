@@ -5,6 +5,8 @@ namespace HabarBankAPI.Domain.Entities
 {
     public class OperationType : Entity
     {
+        public OperationType() { }
+
         public OperationType(string name, bool enabled)
         {
             this.Name = name;
@@ -13,7 +15,7 @@ namespace HabarBankAPI.Domain.Entities
 
         [Key]
         public long OperationTypeId { get; private set; }
-        public string Name { get; private set; }
+        public string? Name { get; private set; }
 
         public void SetName(string name)
         {

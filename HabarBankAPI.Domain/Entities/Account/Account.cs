@@ -7,7 +7,7 @@ using HabarBankAPI.Domain.Exceptions.Account;
 
 namespace HabarBankAPI.Domain.Entities
 {
-    public abstract class Account : Entity, IAggregateRoot
+    public abstract class Account : Entity
     {
         public Account() { }
 

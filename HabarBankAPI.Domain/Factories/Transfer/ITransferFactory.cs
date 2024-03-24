@@ -11,9 +11,9 @@ namespace HabarBankAPI.Domain.Factories
 {
     public interface ITransferFactory : IFactory<Sending>
     {
-        ITransferFactory WithCardSender(Card substanceSender);
-        ITransferFactory WithCardRecipient(Card substanceRecipient);
-        ITransferFactory WithOperationType(OperationType operationType);
+        ITransferFactory WithCardSender(Card? substanceSender);
+        ITransferFactory WithCardRecipient(Card? substanceRecipient);
+        ITransferFactory WithOperationType(OperationType? operationType);
         ITransferFactory WithRublesCount(int rublesCount);
     }
 }
