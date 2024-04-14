@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using HabarBankAPI.Application.DTO.Transfers;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HabarBankAPI.Web.Controllers
 {
     [Route("api/transfers/")]
+    [ApiVersion("1.0")]
     [ApiController]
     public class SendingController : ControllerBase
     {
@@ -30,7 +32,7 @@ namespace HabarBankAPI.Web.Controllers
 
             GenericRepository<OperationType> operationTypesRepository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             Mapper mapperA = AbstractMapper<SendingDTO, Sending>.MapperA;
 
@@ -43,37 +45,70 @@ namespace HabarBankAPI.Web.Controllers
         [HttpGet("{transfer-id}")]
         public async Task<ActionResult<IList<SendingDTO>>> GetTransferByTransferId(long transfer_id)
         {
-            SendingDTO sendingDTO = await this._service.GetTransferByTransferId(transfer_id);
+            try
+            {
+                SendingDTO sendingDTO = await this._service.GetTransferByTransferId(transfer_id);
 
-            return Ok(sendingDTO);
+                return Ok(sendingDTO);
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
         public async Task<ActionResult<IList<SendingDTO>>> GetTransfersByEntityId(long card_id)
         {
-            IList<SendingDTO> sendingDTOs = await this._service.GetTransfersBySubstanceId(card_id);
+            try
+            {
+                IList<SendingDTO> sendingDTOs = await this._service.GetTransfersBySubstanceId(card_id);
 
-            return Ok(sendingDTOs);
+                return Ok(sendingDTOs);
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<SendingDTO>> AddNewTransfer([FromBody] SendingDTO sendingDTO)
         {
-            await this._service.CreateTransfer(sendingDTO);
+            try
+            {
+                await this._service.CreateTransfer(sendingDTO);
 
-            long sendingId = (await this._service.GetTransfersBySubstanceId(sendingDTO.SubstanceId)).Max(x => x.SendingId);
+                long sendingId = (await this._service.GetTransfersBySubstanceId(sendingDTO.SubstanceId)).Max(x => x.SendingId);
 
-            SendingDTO sending = await this._service.GetTransferByTransferId(sendingId);
+                SendingDTO sending = await this._service.GetTransferByTransferId(sendingId);
 
-            return sending;
+                return sending;
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
 
         [HttpPut]
         public async Task<ActionResult> SetTransferEnabled(long sending_id, bool enabled)
         {
-            await this._service.SetTransferStatus(sending_id, enabled);
+            try
+            {
+                await this._service.SetTransferStatus(sending_id, enabled);
 
-            return NoContent();
+                return NoContent();
+            }
+           
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

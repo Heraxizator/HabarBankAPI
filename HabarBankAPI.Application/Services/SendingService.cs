@@ -26,7 +26,7 @@ namespace HabarBankAPI.Application.Services
         private readonly GenericRepository<Card> _cards_repository;
         private readonly GenericRepository<User> _users_repository;
         private readonly GenericRepository<OperationType> _operationtypes_repository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly AppUnitOfWork _unitOfWork;
 
         public SendingService(
             Mapper mapperA,
@@ -35,7 +35,7 @@ namespace HabarBankAPI.Application.Services
             GenericRepository<Card> cardsRepository,
             GenericRepository<User> usersRepository,
             GenericRepository<OperationType> operationTypesRepository,
-            UnitOfWork unitOfWork)
+            AppUnitOfWork unitOfWork)
         {
             this._mapperA = mapperA;
             this._mapperB = mapperB;

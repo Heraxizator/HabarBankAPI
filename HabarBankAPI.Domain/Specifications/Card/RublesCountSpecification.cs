@@ -12,7 +12,7 @@ namespace HabarBankAPI.Domain.Specifications.Card
     {
         public override Expression<Func<int, bool>> ToExpression()
         {
-            return count => count > 0;
+            return count => count >= 0;
         }
     }
 }

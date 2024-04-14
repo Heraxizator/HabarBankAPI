@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HabarBankAPI.Web.Controllers
 {
     [Route("api/card-variants")]
+    [ApiVersion("1.0")]
     [ApiController]
     public class CardVariantController : ControllerBase
     {
@@ -27,7 +29,7 @@ namespace HabarBankAPI.Web.Controllers
 
             GenericRepository<UserLevel> userLevelsRepository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             Mapper mapperA = AbstractMapper<CardVariantDTO, CardVariant>.MapperA;
 
@@ -39,37 +41,69 @@ namespace HabarBankAPI.Web.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CardVariantDTO>>> GetAllCardVariants()
         {
-            IList<CardVariantDTO> cardVariantDTOs = await _service.GetAllCardVariants();
+            try
+            {
+                IList<CardVariantDTO> cardVariantDTOs = await _service.GetAllCardVariants();
 
-            return Ok(cardVariantDTOs);
+                return Ok(cardVariantDTOs);
+            }
+            
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<CardVariantDTO>> GetCardVariantById(int id)
         {
-            CardVariantDTO cardVariantDTO = await _service.GetCardVariantById(id);
+            try
+            {
+                CardVariantDTO cardVariantDTO = await _service.GetCardVariantById(id);
 
-            return Ok(cardVariantDTO);
+                return Ok(cardVariantDTO);
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<CardVariantDTO>> AddNewCardVariant([FromBody] CardVariantDTO cardVariantDTO)
         {
-            await _service.CreateNewCardVariant(cardVariantDTO);
+            try
+            {
+                await _service.CreateNewCardVariant(cardVariantDTO);
 
-            long cardVariantId = (await this._service.GetAllCardVariants()).Max(x => x.CardVariantId);
+                long cardVariantId = (await this._service.GetAllCardVariants()).Max(x => x.CardVariantId);
 
-            CardVariantDTO cardVariant = await this._service.GetCardVariantById(cardVariantId);
+                CardVariantDTO cardVariant = await this._service.GetCardVariantById(cardVariantId);
 
-            return cardVariant;
+                return cardVariant;
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult> EditCardVariantEnabled(int id, bool enabled)
         {
-            await _service.SetCardVariantEnabled(id, enabled);
+            try
+            {
+                await _service.SetCardVariantEnabled(id, enabled);
 
-            return NoContent();
+                return NoContent();
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

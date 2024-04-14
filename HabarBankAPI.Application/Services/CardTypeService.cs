@@ -16,14 +16,14 @@ namespace HabarBankAPI.Application.Services
     public class CardTypeService : ICardTypeService
     {
         private readonly IGenericRepository<CardType> _repository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly AppUnitOfWork _unitOfWork;
 
         private readonly Mapper _mapperA;
         private readonly Mapper _mapperB;
 
         public CardTypeService(
             IGenericRepository<CardType> repository,
-            UnitOfWork unitOfWork,
+            AppUnitOfWork unitOfWork,
             Mapper mapperA,
             Mapper mapperB) 
         {

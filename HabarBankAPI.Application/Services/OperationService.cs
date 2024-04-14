@@ -24,7 +24,7 @@ namespace HabarBankAPI.Application.Services
         private readonly GenericRepository<Operation> _operations_repository;
         private readonly GenericRepository<OperationType> _operationtypes_repository;
         private readonly GenericRepository<Card> _cards_repository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly AppUnitOfWork _unitOfWork;
 
         private readonly Mapper _mapperA;
         private readonly Mapper _mapperB;
@@ -33,7 +33,7 @@ namespace HabarBankAPI.Application.Services
             GenericRepository<Operation> operationsRepository,
             GenericRepository<OperationType> operationTypesRepository,
             GenericRepository<Card> cardsRepository,
-            UnitOfWork unitOfWork,
+            AppUnitOfWork unitOfWork,
             Mapper mapperA, Mapper mapperB)
         {
             this._operations_repository = operationsRepository;

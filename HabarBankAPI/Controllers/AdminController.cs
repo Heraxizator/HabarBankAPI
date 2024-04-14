@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using HabarBankAPI.Application.DTO.Account;
 using HabarBankAPI.Application.DTO.Accounts;
 using HabarBankAPI.Application.DTO.Admins;
@@ -9,7 +10,9 @@ using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
 using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Domain.Entities.Admin;
+using HabarBankAPI.Domain.Entities.Security;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Share;
 using HabarBankAPI.Infrastructure.Uow;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,12 +21,15 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 namespace HabarBankAPI.Controllers
 {
     [Route("api/admins")]
+    [ApiVersion("1.0")]
     [ApiController]
     public class AdminController : ControllerBase
     {
         private readonly IGenericRepository<Admin> _admins_repository;
 
-        private readonly AdminService _service;
+        private readonly AdminService _admin_service;
+        private readonly SecurityService _security_service;
+
         private readonly Mapper _mapper;
 
         public AdminController()
@@ -34,61 +40,129 @@ namespace HabarBankAPI.Controllers
 
             this._admins_repository = new GenericRepository<Admin>(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
-            this._service = new AdminService(_mapper, _admins_repository, unitOfWork);
+            this._admin_service = new AdminService(_mapper, _admins_repository, unitOfWork);
+
+            SecurityDbContext securityDbContext = new();
+
+            SecurityUnitOfWork securityUnitOfWork = new(securityDbContext);
+
+            GenericRepository<Security> repository = new(securityDbContext);
+
+            this._security_service = new SecurityService(repository, securityUnitOfWork);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AdminDTO>>> TakeUsers(int count)
+        public async Task<ActionResult<IEnumerable<AdminDTO>>> TakeUsers(int count, [FromHeader] string token)
         {
-            IList<AdminDTO> adminDTOs = await _service.GetAccountsList(count);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return Ok(adminDTOs);
+                IList<AdminDTO> adminDTOs = await _admin_service.GetAccountsList(count);
+
+                return Ok(adminDTOs);
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("auth")]
-        public async Task<ActionResult<AdminDTO>> GetAdminByLoginAndPassword(string login, string password)
+        public async Task<ActionResult<AdminDTO>> GetAdminByLoginAndPassword(string login, string password, [FromHeader] string token)
         {
-            AdminDTO adminDTO = await _service.GetAuthTokenByData(login, password);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return adminDTO;
+                AdminDTO adminDTO = await _admin_service.GetAuthTokenByData(login, password);
+
+                return adminDTO;
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<AdminDTO>> GetAdminById(long id)
+        public async Task<ActionResult<AdminDTO>> GetAdminById(long id, [FromHeader] string token)
         {
-            AdminDTO adminDTO = await _service.GetAccountById(id);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return adminDTO;
+                AdminDTO adminDTO = await _admin_service.GetAccountById(id);
+
+                return adminDTO;
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
-        public async Task<ActionResult<AdminDTO>> AddNewAdmin([FromBody] AdminDTO adminDTO)
+        public async Task<ActionResult<AdminDTO>> AddNewAdmin([FromBody] AdminDTO adminDTO, [FromHeader] string token)
         {
-            await this._service.CreateAdminAccount(adminDTO);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            long adminId = (await this._service.GetAccountsList(int.MaxValue)).Max(x => x.AdminId);
+                await this._admin_service.CreateAdminAccount(adminDTO);
 
-            AdminDTO admin = await this._service.GetAccountById(adminId);
+                long adminId = (await this._admin_service.GetAccountsList(int.MaxValue)).Max(x => x.AdminId);
 
-            return admin;
+                AdminDTO admin = await this._admin_service.GetAccountById(adminId);
+
+                return admin;
+            }
+           
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}/status")]
-        public async Task<ActionResult> EditUserStatus(long id, bool enabled)
+        public async Task<ActionResult> EditUserStatus(long id, bool enabled, [FromHeader] string token)
         {
-            await this._service.EditAccountEnabled(id, enabled);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return NoContent();
+                await this._admin_service.EditAccountEnabled(id, enabled);
+
+                return NoContent();
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}/profile")]
-        public async Task<ActionResult> EditUserProfile(long id, [FromBody] ProfileDTO userProfileDTO)
+        public async Task<ActionResult> EditUserProfile(long id, [FromBody] ProfileDTO userProfileDTO, [FromHeader] string token)
         {
-            await this._service.EditAccountProfile(id, userProfileDTO);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return NoContent();
+                await this._admin_service.EditAccountProfile(id, userProfileDTO);
+
+                return NoContent();
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

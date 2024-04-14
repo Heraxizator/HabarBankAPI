@@ -44,7 +44,7 @@ namespace HabarBankAPI.Application.Services
             GenericRepository<User> users_repository,
             GenericRepository<Substance> entities_repository,
             GenericRepository<CardVariant> cardvariants_repository,
-            UnitOfWork unitOfWork)
+            AppUnitOfWork unitOfWork)
         {
             this._card_mapperA = card_mapperA;
             this._card_mapperB = card_mapperB;

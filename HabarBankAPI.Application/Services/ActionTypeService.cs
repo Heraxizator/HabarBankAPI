@@ -15,13 +15,13 @@ namespace HabarBankAPI.Application.Services
     public class ActionTypeService : IActionTypeService
     {
         private readonly IGenericRepository<OperationType> _repository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly AppUnitOfWork _unitOfWork;
         private readonly Mapper _mapperA;
         private readonly Mapper _mapperB;
 
         public ActionTypeService(
             IGenericRepository<OperationType> repository,
-            UnitOfWork unitOfWork,
+            AppUnitOfWork unitOfWork,
             Mapper mapperA,
             Mapper mapperB)
         {

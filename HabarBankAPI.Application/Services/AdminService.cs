@@ -23,11 +23,11 @@ namespace HabarBankAPI.Application.Services
     {
         private readonly Mapper _mapper;
         private readonly IGenericRepository<Admin> _admins_repository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly AppUnitOfWork _unitOfWork;
 
         public AdminService(Mapper mapper,
             IGenericRepository<Admin> adminsRepository,
-            UnitOfWork unitOfWork)
+            AppUnitOfWork unitOfWork)
         {
             this._mapper = mapper;
             this._admins_repository = adminsRepository;

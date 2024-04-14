@@ -1,4 +1,3 @@
-using HabarBankAPI.Web.Handlers;
 
 namespace HabarBankAPI
 {
@@ -11,6 +10,9 @@ namespace HabarBankAPI
             // Add services to the container.
 
             _ = builder.Services.AddControllers();
+
+            builder.Services.AddApiVersioning();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             _ = builder.Services.AddEndpointsApiExplorer();
             _ = builder.Services.AddSwaggerGen();

@@ -38,7 +38,7 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
             GenericRepository<CardVariant> cardVariantRepository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             this._service = new CardService(cardMapperA, cardMapperB, userMapper, cardsRepository, usersRepository, substanceRepository, cardVariantRepository, unitOfWork);
         }

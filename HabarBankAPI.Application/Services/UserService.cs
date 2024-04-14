@@ -28,13 +28,13 @@ namespace HabarBankAPI.Application.Services
 
         private readonly GenericRepository<User> _users_repository;
         private readonly GenericRepository<UserLevel> _levels_repository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly AppUnitOfWork _unitOfWork;
 
         public UserService(
             Mapper mapper, 
             GenericRepository<User> usersRepository,
             GenericRepository<UserLevel> levelsRepository,
-            UnitOfWork unitOfWork) 
+            AppUnitOfWork unitOfWork) 
         { 
             this._mapper = mapper;
             this._users_repository = usersRepository;

@@ -26,7 +26,7 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
             GenericRepository<CardType> cardTypesRepository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             Mapper mapperA = AbstractMapper<CardType, CardTypeDTO>.MapperA;
 

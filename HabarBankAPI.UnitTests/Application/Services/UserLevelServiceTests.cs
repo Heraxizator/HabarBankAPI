@@ -27,7 +27,7 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
             GenericRepository<UserLevel> userlevelRepository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             Mapper mapperA = AbstractMapper<UserLevel, AccountLevelDTO>.MapperA;
 

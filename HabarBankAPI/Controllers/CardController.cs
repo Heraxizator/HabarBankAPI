@@ -9,10 +9,14 @@ using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Domain.Entities;
 using HabarBankAPI.Application.DTO.Account;
 using HabarBankAPI.Infrastructure.Uow;
+using Asp.Versioning;
+using HabarBankAPI.Domain.Entities.Security;
+using HabarBankAPI.Infrastructure.Share;
 
 namespace HabarBankAPI.Web.Controllers
 {
     [Route("api/cards/")]
+    [ApiVersion("1.0")]
     [ApiController]
     public class CardController : ControllerBase
     {
@@ -22,7 +26,9 @@ namespace HabarBankAPI.Web.Controllers
         private readonly GenericRepository<Substance> _entities_repository;
         private readonly GenericRepository<CardVariant> _cardvariant_repository;
 
-        private readonly CardService _service;
+        private readonly CardService _card_service;
+        private readonly SecurityService _security_service;
+
         private readonly Mapper _card_mapperA;
         private readonly Mapper _card_mapperB;
         private readonly Mapper _user_mapper;
@@ -45,46 +51,94 @@ namespace HabarBankAPI.Web.Controllers
 
             this._cardvariant_repository = new GenericRepository<CardVariant>(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
-            this._service = new CardService(
+            this._card_service = new CardService(
                 _card_mapperA, _card_mapperB, _user_mapper, _cards_repository, _users_repository, _entities_repository, _cardvariant_repository, unitOfWork);
+
+            SecurityDbContext securityDbContext = new();
+
+            SecurityUnitOfWork securityUnitOfWork = new(securityDbContext);
+
+            GenericRepository<Security> repository = new(securityDbContext);
+
+            this._security_service = new SecurityService(repository, securityUnitOfWork);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IList<CardDTO>>> TakeCards(long user_id)
+        public async Task<ActionResult<IList<CardDTO>>> TakeCards(long user_id, [FromHeader] string token)
         {
-            IList<CardDTO> cardDTOs = await this._service.GetCardsByUserId(user_id);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return Ok(cardDTOs);
+                IList<CardDTO> cardDTOs = await this._card_service.GetCardsByUserId(user_id);
+
+                return Ok(cardDTOs);
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{card-id}")]
-        public async Task<ActionResult<CardDTO>> GetCardById(long card_id)
+        public async Task<ActionResult<CardDTO>> GetCardById(long card_id, [FromHeader] string token)
         {
-            CardDTO cardDTO = await this._service.GetCardData(card_id);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return Ok(cardDTO);
+                CardDTO cardDTO = await this._card_service.GetCardData(card_id);
+
+                return Ok(cardDTO);
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
-        public async Task<ActionResult<CardDTO>> AddNewCard(long user_id, [FromBody] CardDTO cardDTO)
+        public async Task<ActionResult<CardDTO>> AddNewCard(long user_id, [FromBody] CardDTO cardDTO, [FromHeader] string token)
         {
-            await this._service.CreateCard(user_id, cardDTO);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            long cardId = (await this._service.GetCardsByUserId(user_id)).Max(x => x.CardId);
+                await this._card_service.CreateCard(user_id, cardDTO);
 
-            CardDTO card = await this._service.GetCardData(cardId);
+                long cardId = (await this._card_service.GetCardsByUserId(user_id)).Max(x => x.CardId);
 
-            return card;
+                CardDTO card = await this._card_service.GetCardData(cardId);
+
+                return card;
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut]
-        public async Task<ActionResult> EditCardEnabled(long card_id, bool enabled)
+        public async Task<ActionResult> EditCardEnabled(long card_id, bool enabled, [FromHeader] string token)
         {
-            await this._service.EditCardEnabled(card_id, enabled);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return NoContent();
+                await this._card_service.EditCardEnabled(card_id, enabled);
+
+                return NoContent();
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

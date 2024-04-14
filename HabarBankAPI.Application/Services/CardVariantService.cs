@@ -22,7 +22,7 @@ namespace HabarBankAPI.Application.Services
         private readonly GenericRepository<CardType> _cardtypes_repository;
         private readonly GenericRepository<UserLevel> _userlevels_repository;
 
-        private readonly UnitOfWork _unitOfWork;
+        private readonly AppUnitOfWork _unitOfWork;
 
         private readonly Mapper _mapperA;
         private readonly Mapper _mapperB;
@@ -31,7 +31,7 @@ namespace HabarBankAPI.Application.Services
             GenericRepository<CardVariant> cardVariantRepository,
             GenericRepository<CardType> cardTypeRepository,
             GenericRepository<UserLevel> userLevelRepository,
-            UnitOfWork unitOfWork,
+            AppUnitOfWork unitOfWork,
             Mapper mapperA,
             Mapper mapperB)
         {

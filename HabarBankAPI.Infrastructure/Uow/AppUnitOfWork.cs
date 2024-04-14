@@ -3,11 +3,11 @@ using HabarBankAPI.Domain.Abstractions.Database;
 
 namespace HabarBankAPI.Infrastructure.Uow
 {
-    public class UnitOfWork : IUnitOfWork
+    public class AppUnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
 
-        public UnitOfWork(ApplicationDbContext context)
+        public AppUnitOfWork(ApplicationDbContext context)
         {
             this._context = context;
         }

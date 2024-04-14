@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using HabarBankAPI.Application;
 using HabarBankAPI.Application.DTO.Transfers;
 using HabarBankAPI.Application.Services;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HabarBankAPI.Web.Controllers
 {
     [Route("api/operations/")]
+    [ApiVersion("1.0")]
     [ApiController]
     public class OperationController : ControllerBase
     {
@@ -27,7 +29,7 @@ namespace HabarBankAPI.Web.Controllers
 
             GenericRepository<Card> cardsRepository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             Mapper mapperA = AbstractMapper<OperationDTO, Operation>.MapperA;
 
@@ -39,37 +41,69 @@ namespace HabarBankAPI.Web.Controllers
         [HttpGet("{action-id}")]
         public async Task<ActionResult<IList<OperationDTO>>> GetOperationByOperationId(int action_id)
         {
-            OperationDTO actionDTO = await this._service.GetActionByActionId(action_id);
+            try
+            {
+                OperationDTO actionDTO = await this._service.GetActionByActionId(action_id);
 
-            return Ok(actionDTO);
+                return Ok(actionDTO);
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
         public async Task<ActionResult<IList<OperationDTO>>> GetOperationsByEntityId(long card_id)
         {
-            IList<OperationDTO> actionDTOs = await this._service.GetActionsByEntityId(card_id);
+            try
+            {
+                IList<OperationDTO> actionDTOs = await this._service.GetActionsByEntityId(card_id);
 
-            return Ok(actionDTOs);
+                return Ok(actionDTOs);
+            }
+            
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<OperationDTO>> AddNewOperation([FromBody] OperationDTO actionDTO)
         {
-            await this._service.CreateNewAction(actionDTO);
+            try
+            {
+                await this._service.CreateNewAction(actionDTO);
 
-            long actionId = (await this._service.GetAllActions(int.MaxValue)).Max(x => x.OperationId);
+                long actionId = (await this._service.GetAllActions(int.MaxValue)).Max(x => x.OperationId);
 
-            OperationDTO action = await this._service.GetActionByActionId(actionId);
+                OperationDTO action = await this._service.GetActionByActionId(actionId);
 
-            return action;
+                return action;
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut]
         public async Task<ActionResult> SetTOperationEnabled(int action_id, bool enabled)
         {
-            await this._service.SetActionEnabled(action_id, enabled);
+            try
+            {
+                await this._service.SetActionEnabled(action_id, enabled);
 
-            return NoContent();
+                return NoContent();
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

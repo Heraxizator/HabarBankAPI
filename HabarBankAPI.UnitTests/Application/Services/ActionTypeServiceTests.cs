@@ -26,7 +26,7 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
             GenericRepository<OperationType> repository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             Mapper mapperA = AbstractMapper<OperationType, OperationTypeDTO>.MapperA;
 

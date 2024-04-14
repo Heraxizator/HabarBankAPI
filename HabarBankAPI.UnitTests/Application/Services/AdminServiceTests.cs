@@ -25,7 +25,7 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
             GenericRepository<Admin> adminRepository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             Mapper mapper = AbstractMapper<Admin, AdminDTO>.MapperA;
 

@@ -29,7 +29,7 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
             GenericRepository<UserLevel> levelsRepository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
         }
 
         [Fact]

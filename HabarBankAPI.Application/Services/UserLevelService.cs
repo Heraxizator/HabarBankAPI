@@ -18,14 +18,14 @@ namespace HabarBankAPI.Application.Services
     public class UserLevelService : IUserLevelService
     {
         private readonly IGenericRepository<UserLevel> _repository;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly AppUnitOfWork _unitOfWork;
 
         private readonly Mapper _mapperA;
         private readonly Mapper _mapperB;
 
         public UserLevelService(
             IGenericRepository<UserLevel> repository,
-            UnitOfWork unitOfWork,
+            AppUnitOfWork unitOfWork,
             Mapper mapperA,
             Mapper mapperB) 
         {

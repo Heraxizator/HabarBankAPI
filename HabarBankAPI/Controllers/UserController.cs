@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using HabarBankAPI.Application.DTO;
 using HabarBankAPI.Application.DTO.Account;
 using HabarBankAPI.Application.DTO.AccountLevels;
@@ -9,16 +10,21 @@ using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
 using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Security;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Share;
 using HabarBankAPI.Infrastructure.Uow;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace HabarBankAPI.Controllers
 {
-    [Route("api/users")]
+    [Route("api/{version:apiVersion}/users")]
+    [ApiVersion("1.0")]
     [ApiController]
+
     public class UserController : ControllerBase
     {
         private readonly GenericRepository<User> _users_repository;
@@ -26,6 +32,7 @@ namespace HabarBankAPI.Controllers
             
         private readonly UserService _user_service;
         private readonly UserLevelService _userlevel_service;
+        private readonly SecurityService _security_service;
 
         private readonly Mapper _mapper;
         private readonly Mapper _mapperA;
@@ -45,79 +52,167 @@ namespace HabarBankAPI.Controllers
 
             this._levels_repository = new GenericRepository<UserLevel>(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork appUnitOfWork = new(context);
 
-            this._user_service = new UserService(_mapper, _users_repository, _levels_repository, unitOfWork);
+            this._user_service = new UserService(_mapper, _users_repository, _levels_repository, appUnitOfWork);
 
-            this._userlevel_service = new UserLevelService(_levels_repository, unitOfWork, _mapperA, _mapperB);
+            this._userlevel_service = new UserLevelService(_levels_repository, appUnitOfWork, _mapperA, _mapperB);
+
+            SecurityDbContext securityDbContext = new();
+
+            SecurityUnitOfWork securityUnitOfWork = new(securityDbContext);
+
+            GenericRepository<Security> repository = new(securityDbContext);
+
+            this._security_service = new SecurityService(repository, securityUnitOfWork);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> TakeUsers(int count)
+        public async Task<ActionResult<IEnumerable<UserDTO>>> TakeUsers(int count, [FromHeader] string token)
         {
-            IList<UserDTO> userDTOs = await _user_service.GetAccountsList(count);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return Ok(userDTOs);
+                IList<UserDTO> userDTOs = await _user_service.GetAccountsList(count);
+
+                return Ok(userDTOs);
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("auth")]
-        public async Task<ActionResult<UserDTO>> GetUserByLoginAndPassword(string login, string password)
+        public async Task<ActionResult<UserDTO>> GetUserByLoginAndPassword(string login, string password, [FromHeader] string token)
         {
-            UserDTO userDTO = await _user_service.GetAuthTokenByData(login, password);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return userDTO;
+                UserDTO userDTO = await _user_service.GetAuthTokenByData(login, password);
+
+                return userDTO;
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserDTO>> GetUserById(long id)
+        public async Task<ActionResult<UserDTO>> GetUserById(long id, [FromHeader] string token)
         {
-            UserDTO userDTOs = await _user_service.GetAccountById(id);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return userDTOs;
+                UserDTO userDTOs = await _user_service.GetAccountById(id);
+
+                return userDTOs;
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
-        public async Task<ActionResult<UserDTO>> AddNewUser([FromBody] UserDTO userDTO)
+        public async Task<ActionResult<UserDTO>> AddNewUser([FromBody] UserDTO userDTO, [FromHeader] string token)
         {
-            await this._user_service.CreateUserAccount(userDTO);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            long userId = (await this._user_service.GetAccountsList(int.MaxValue)).Max(x => x.UserId);
+                await this._user_service.CreateUserAccount(userDTO);
 
-            UserDTO user = await this._user_service.GetAccountById(userId);
+                long userId = (await this._user_service.GetAccountsList(int.MaxValue)).Max(x => x.UserId);
 
-            return user;
+                UserDTO user = await this._user_service.GetAccountById(userId);
+
+                return user;
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}/status")]
-        public async Task<ActionResult> EditUserStatus(long id, long levelId)
+        public async Task<ActionResult> EditUserStatus(long id, long levelId, [FromHeader] string token)
         {
-            await this._user_service.EditAccountStatus(id, levelId);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return NoContent();
+                await this._user_service.EditAccountStatus(id, levelId);
+
+                return NoContent();
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}/enabled")]
-        public async Task<ActionResult> EditUserEnabled(long id, bool enabled)
+        public async Task<ActionResult> EditUserEnabled(long id, bool enabled, [FromHeader] string token)
         {
-            await this._user_service.EditAccountEnabled(id, enabled);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return NoContent();
+                await this._user_service.EditAccountEnabled(id, enabled);
+
+                return NoContent();
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}/profile")]
-        public async Task<ActionResult> EditUserProfile(long id, [FromBody] ProfileDTO userProfileDTO)
+        public async Task<ActionResult> EditUserProfile(long id, [FromBody] ProfileDTO userProfileDTO, [FromHeader] string token)
         {
-            await this._user_service.EditAccountProfile(id, userProfileDTO);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return NoContent();
+                await this._user_service.EditAccountProfile(id, userProfileDTO);
+
+                return NoContent();
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> RemoveUserById(long id)
+        public async Task<ActionResult> RemoveUserById(long id, [FromHeader] string token)
         {
-            await this._user_service.EditAccountEnabled(id, false);
+            try
+            {
+                await this._security_service.IsExists(token);
 
-            return NoContent();
+                await this._user_service.EditAccountEnabled(id, false);
+
+                return NoContent();
+            }
+           
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

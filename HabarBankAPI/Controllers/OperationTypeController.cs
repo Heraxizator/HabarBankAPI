@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using HabarBankAPI.Application;
 using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Application.Services;
@@ -12,7 +13,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HabarBankAPI.Web.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/operation-types")]
+    [ApiVersion("1.0")]
     [ApiController]
     public class OperationTypeController : ControllerBase
     {
@@ -26,7 +28,7 @@ namespace HabarBankAPI.Web.Controllers
 
             IGenericRepository<OperationType> repository = new GenericRepository<OperationType>(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             Mapper mapperA = AbstractMapper<OperationTypeDTO, OperationType>.MapperA;
 
@@ -38,37 +40,69 @@ namespace HabarBankAPI.Web.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OperationTypeDTO>>> GetAllActionTypes()
         {
-            IList<OperationTypeDTO> actionTypeDTOs = await _service.GetAllActionTypes();
+            try
+            {
+                IList<OperationTypeDTO> actionTypeDTOs = await _service.GetAllActionTypes();
 
-            return Ok(actionTypeDTOs);
+                return Ok(actionTypeDTOs);
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<OperationTypeDTO>> GetActionTypeById(int id)
         {
-            OperationTypeDTO actionTypeDTO = await _service.GetActionTypeById(id);
+            try
+            {
+                OperationTypeDTO actionTypeDTO = await _service.GetActionTypeById(id);
 
-            return Ok(actionTypeDTO);
+                return Ok(actionTypeDTO);
+            }
+            
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<OperationTypeDTO>> AddActionType([FromBody] OperationTypeDTO actionTypeDTO)
         {
-            await _service.CreateNewActionType(actionTypeDTO);
+            try
+            {
+                await _service.CreateNewActionType(actionTypeDTO);
 
-            long actionTypeId = (await this._service.GetAllActionTypes()).Max(x => x.OperationTypeId);
+                long actionTypeId = (await this._service.GetAllActionTypes()).Max(x => x.OperationTypeId);
 
-            OperationTypeDTO actionType = await this._service.GetActionTypeById(actionTypeId);
+                OperationTypeDTO actionType = await this._service.GetActionTypeById(actionTypeId);
 
-            return actionType;
+                return actionType;
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult> EditActionTypeEnabled(int id, bool enabled)
         {
-            await _service.SetActionTypeEnabled(id, enabled);
+            try
+            {
+                await _service.SetActionTypeEnabled(id, enabled);
 
-            return NoContent();
+                return NoContent();
+            }
+            
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

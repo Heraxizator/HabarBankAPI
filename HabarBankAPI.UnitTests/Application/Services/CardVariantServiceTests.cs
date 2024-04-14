@@ -29,7 +29,7 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
             GenericRepository<UserLevel> userLevelsRepository = new(context);
 
-            UnitOfWork unitOfWork = new(context);
+            AppUnitOfWork unitOfWork = new(context);
 
             Mapper mapperA = AbstractMapper<CardVariant, CardVariantDTO>.MapperA;
 
