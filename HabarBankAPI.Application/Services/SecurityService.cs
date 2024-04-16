@@ -53,6 +53,11 @@ namespace HabarBankAPI.Application.Services
                 throw new Exception("Не может быть несколько токенов для одного почтового ящика");
             }
 
+            if (securities.Any() is false)
+            {
+                throw new Exception("Токен для данного почтового ящика не найден");
+            }
+
             return securities.FirstOrDefault()?.Token;
         }
 

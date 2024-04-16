@@ -1,4 +1,12 @@
 
+using HabarBankAPI.Application.Interfaces;
+using HabarBankAPI.Application.Services;
+using HabarBankAPI.Domain.Entities.Security;
+using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Share;
+using HabarBankAPI.Infrastructure.Uow;
+using HabarBankAPI.Web.Services;
+
 namespace HabarBankAPI
 {
     public class Program
@@ -31,12 +39,9 @@ namespace HabarBankAPI
 
             _ = app.UseAuthorization();
 
+            AppInitializer.Init();
 
             _ = app.MapControllers();
-
-            //AppDbInitializer appDbInitializer = new();
-
-            //appDbInitializer.Init();
 
             app.Run();
         }

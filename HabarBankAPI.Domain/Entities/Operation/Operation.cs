@@ -19,7 +19,7 @@ namespace HabarBankAPI.Domain.Entities
         public Operation(OperationType? operationType, DateTime operationDateTime, Card? card)
         {
             this.OperationType = operationType; 
-            this.OperationDateTime = operationDateTime.ToString();
+            this.OperationDateTime = operationDateTime;
             this.Card = card;
         }
 

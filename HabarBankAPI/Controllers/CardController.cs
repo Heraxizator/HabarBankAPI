@@ -12,10 +12,12 @@ using HabarBankAPI.Infrastructure.Uow;
 using Asp.Versioning;
 using HabarBankAPI.Domain.Entities.Security;
 using HabarBankAPI.Infrastructure.Share;
+using HabarBankAPI.Application.Interfaces;
+using HabarBankAPI.Web.Services;
 
 namespace HabarBankAPI.Web.Controllers
 {
-    [Route("api/cards/")]
+    [Route("api/{version:apiVersion}/cards/")]
     [ApiVersion("1.0")]
     [ApiController]
     public class CardController : ControllerBase
@@ -26,8 +28,8 @@ namespace HabarBankAPI.Web.Controllers
         private readonly GenericRepository<Substance> _entities_repository;
         private readonly GenericRepository<CardVariant> _cardvariant_repository;
 
-        private readonly CardService _card_service;
-        private readonly SecurityService _security_service;
+        private readonly ICardService _card_service;
+        private readonly ISecurityService _security_service;
 
         private readonly Mapper _card_mapperA;
         private readonly Mapper _card_mapperB;
@@ -56,13 +58,7 @@ namespace HabarBankAPI.Web.Controllers
             this._card_service = new CardService(
                 _card_mapperA, _card_mapperB, _user_mapper, _cards_repository, _users_repository, _entities_repository, _cardvariant_repository, unitOfWork);
 
-            SecurityDbContext securityDbContext = new();
-
-            SecurityUnitOfWork securityUnitOfWork = new(securityDbContext);
-
-            GenericRepository<Security> repository = new(securityDbContext);
-
-            this._security_service = new SecurityService(repository, securityUnitOfWork);
+            this._security_service = ServiceLocator.Instance.GetService<ISecurityService>();
         }
 
         [HttpGet]

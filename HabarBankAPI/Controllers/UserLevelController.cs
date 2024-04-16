@@ -8,18 +8,22 @@ using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
 using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Security;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Share;
 using HabarBankAPI.Infrastructure.Uow;
+using HabarBankAPI.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HabarBankAPI.Web.Controllers
 {
-    [Route("api/account-levels")]
+    [Route("api/{version:apiVersion}/account-levels")]
     [ApiVersion("1.0")]
     [ApiController]
     public class UserLevelController : ControllerBase
     {
-        private readonly UserLevelService _service;
+        private readonly IUserLevelService _userlevel_service;
+        private readonly ISecurityService _security_service;
 
         public UserLevelController() 
         {
@@ -33,15 +37,19 @@ namespace HabarBankAPI.Web.Controllers
 
             AppUnitOfWork unitOfWork = new(context);
 
-            this._service = new UserLevelService(repository, unitOfWork, mapperA, mapperB);
+            this._userlevel_service = new UserLevelService(repository, unitOfWork, mapperA, mapperB);
+
+            this._security_service = ServiceLocator.Instance.GetService<ISecurityService>();
         }
 
         [HttpGet]
-        public async Task<ActionResult<IList<AccountLevelDTO>>> GetAllAccountLevels()
+        public async Task<ActionResult<IList<AccountLevelDTO>>> GetAllAccountLevels([FromHeader] string token)
         {
             try
             {
-                IList<AccountLevelDTO> dTOs = await this._service.GetAllAccountLevels();
+                await this._security_service.IsExists(token);
+
+                IList<AccountLevelDTO> dTOs = await this._userlevel_service.GetAllAccountLevels();
 
                 return Ok(dTOs);
             }
@@ -53,11 +61,13 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<AccountLevelDTO>> GetAccountLevelById(long id)
+        public async Task<ActionResult<AccountLevelDTO>> GetAccountLevelById(long id, [FromHeader] string token)
         {
             try
             {
-                AccountLevelDTO accountLevelDTO = await this._service.GetAccountLevelById(id);
+                await this._security_service.IsExists(token);
+
+                AccountLevelDTO accountLevelDTO = await this._userlevel_service.GetAccountLevelById(id);
 
                 return accountLevelDTO;
             }
@@ -69,15 +79,17 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<AccountLevelDTO>> AddNewAccountLevel([FromBody] AccountLevelDTO accountLevelDTO)
+        public async Task<ActionResult<AccountLevelDTO>> AddNewAccountLevel([FromBody] AccountLevelDTO accountLevelDTO, [FromHeader] string token)
         {
             try
             {
-                await this._service.CreateNewAccountLevel(accountLevelDTO);
+                await this._security_service.IsExists(token);
 
-                long accountLevelId = (await this._service.GetAllAccountLevels()).Max(x => x.AccountLevelId);
+                await this._userlevel_service.CreateNewAccountLevel(accountLevelDTO);
 
-                AccountLevelDTO accountLevel = await this._service.GetAccountLevelById(accountLevelId);
+                long accountLevelId = (await this._userlevel_service.GetAllAccountLevels()).Max(x => x.AccountLevelId);
+
+                AccountLevelDTO accountLevel = await this._userlevel_service.GetAccountLevelById(accountLevelId);
 
                 return accountLevel;
             }
@@ -89,11 +101,13 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> EditAccountLevelEnabled(long id, bool enabled)
+        public async Task<ActionResult> EditAccountLevelEnabled(long id, bool enabled, [FromHeader] string token)
         {
             try
             {
-                await this._service.SetAccountLevelEnabled(id, enabled);
+                await this._security_service.IsExists(token);
+
+                await this._userlevel_service.SetAccountLevelEnabled(id, enabled);
 
                 return NoContent();
             }

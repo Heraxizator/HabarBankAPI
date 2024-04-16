@@ -4,6 +4,7 @@ using HabarBankAPI.Application.DTO.Account;
 using HabarBankAPI.Application.DTO.Accounts;
 using HabarBankAPI.Application.DTO.Admins;
 using HabarBankAPI.Application.DTO.Users;
+using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
@@ -14,21 +15,22 @@ using HabarBankAPI.Domain.Entities.Security;
 using HabarBankAPI.Infrastructure.Repositories;
 using HabarBankAPI.Infrastructure.Share;
 using HabarBankAPI.Infrastructure.Uow;
+using HabarBankAPI.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace HabarBankAPI.Controllers
 {
-    [Route("api/admins")]
+    [Route("api/{version:apiVersion}/admins")]
     [ApiVersion("1.0")]
     [ApiController]
     public class AdminController : ControllerBase
     {
         private readonly IGenericRepository<Admin> _admins_repository;
 
-        private readonly AdminService _admin_service;
-        private readonly SecurityService _security_service;
+        private readonly IAdminService _admin_service;
+        private readonly ISecurityService _security_service;
 
         private readonly Mapper _mapper;
 
@@ -44,13 +46,7 @@ namespace HabarBankAPI.Controllers
 
             this._admin_service = new AdminService(_mapper, _admins_repository, unitOfWork);
 
-            SecurityDbContext securityDbContext = new();
-
-            SecurityUnitOfWork securityUnitOfWork = new(securityDbContext);
-
-            GenericRepository<Security> repository = new(securityDbContext);
-
-            this._security_service = new SecurityService(repository, securityUnitOfWork);
+            this._security_service = ServiceLocator.Instance.GetService<ISecurityService>();
         }
 
         [HttpGet]

@@ -5,6 +5,7 @@ using HabarBankAPI.Application.DTO.Account;
 using HabarBankAPI.Application.DTO.AccountLevels;
 using HabarBankAPI.Application.DTO.Accounts;
 using HabarBankAPI.Application.DTO.Users;
+using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
@@ -14,6 +15,7 @@ using HabarBankAPI.Domain.Entities.Security;
 using HabarBankAPI.Infrastructure.Repositories;
 using HabarBankAPI.Infrastructure.Share;
 using HabarBankAPI.Infrastructure.Uow;
+using HabarBankAPI.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,9 +32,9 @@ namespace HabarBankAPI.Controllers
         private readonly GenericRepository<User> _users_repository;
         private readonly GenericRepository<UserLevel> _levels_repository;
             
-        private readonly UserService _user_service;
-        private readonly UserLevelService _userlevel_service;
-        private readonly SecurityService _security_service;
+        private readonly IUserService _user_service;
+        private readonly IUserLevelService _userlevel_service;
+        private readonly ISecurityService _security_service;
 
         private readonly Mapper _mapper;
         private readonly Mapper _mapperA;
@@ -58,13 +60,7 @@ namespace HabarBankAPI.Controllers
 
             this._userlevel_service = new UserLevelService(_levels_repository, appUnitOfWork, _mapperA, _mapperB);
 
-            SecurityDbContext securityDbContext = new();
-
-            SecurityUnitOfWork securityUnitOfWork = new(securityDbContext);
-
-            GenericRepository<Security> repository = new(securityDbContext);
-
-            this._security_service = new SecurityService(repository, securityUnitOfWork);
+            this._security_service = ServiceLocator.Instance.GetService<ISecurityService>();
         }
 
         [HttpGet]
@@ -150,7 +146,7 @@ namespace HabarBankAPI.Controllers
             {
                 await this._security_service.IsExists(token);
 
-                await this._user_service.EditAccountStatus(id, levelId);
+                //await this._user_service.EditAccountStatus(id, userLevel);
 
                 return NoContent();
             }

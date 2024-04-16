@@ -14,12 +14,13 @@ namespace HabarBankAPI.Domain.Entities.Transfer
     {
         public Sending() { }
 
-        public Sending(Card? cardSender, Card? cardRecipient, OperationType? operationType, int rublesCount, bool sendingEnabled)
+        public Sending(Card? cardSender, Card? cardRecipient, OperationType? operationType, int rublesCount, DateTime operationDateTime, bool sendingEnabled)
         {
             this.CardSender = cardSender;
             this.CardRecipient = cardRecipient;
             this.OperationType = operationType;
             this.RublesCount = rublesCount;
+            this.OperationDateTime = operationDateTime;
             this.Enabled = sendingEnabled;
         }
 

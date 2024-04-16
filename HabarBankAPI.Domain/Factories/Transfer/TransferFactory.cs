@@ -16,6 +16,7 @@ namespace HabarBankAPI.Domain.Factories.Transfer
         private Card? _cardSender = default;
         private OperationType? _operationType = default;
         private int _rublesCount;
+        private DateTime _operationDateTime;
 
         public Sending Build()
         {
@@ -39,12 +40,18 @@ namespace HabarBankAPI.Domain.Factories.Transfer
                 throw new ArgumentException("Рублей при переводе должно быть больше нуля");
             }
 
+            if (this._operationDateTime.Year < DateTime.Now.Year)
+            {
+                throw new ArgumentException("Некорректная дата для перевода");
+            }
+
             return new Sending
             (
                 this._cardSender,
                 this._cardRecipient,
                 this._operationType,
                 this._rublesCount,
+                this._operationDateTime,
                 true
             );
         }
@@ -70,6 +77,12 @@ namespace HabarBankAPI.Domain.Factories.Transfer
         public ITransferFactory WithOperationType(OperationType? operationType)
         {
             this._operationType = operationType;
+            return this;
+        }
+
+        public ITransferFactory WithOperationTime(DateTime operationTime)
+        {
+            this._operationDateTime = operationTime;
             return this;
         }
     }

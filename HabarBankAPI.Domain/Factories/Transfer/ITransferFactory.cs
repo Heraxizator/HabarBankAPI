@@ -15,5 +15,6 @@ namespace HabarBankAPI.Domain.Factories
         ITransferFactory WithCardRecipient(Card? substanceRecipient);
         ITransferFactory WithOperationType(OperationType? operationType);
         ITransferFactory WithRublesCount(int rublesCount);
+        ITransferFactory WithOperationTime(DateTime operationTime);
     }
 }

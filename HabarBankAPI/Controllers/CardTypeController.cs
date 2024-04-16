@@ -2,24 +2,28 @@
 using AutoMapper;
 using HabarBankAPI.Application.DTO.Cards;
 using HabarBankAPI.Application.DTO.Transfers;
+using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Abstractions.Mappers;
 using HabarBankAPI.Domain.Abstractions.Repositories;
 using HabarBankAPI.Domain.Entities;
+using HabarBankAPI.Domain.Entities.Security;
 using HabarBankAPI.Infrastructure.Repositories;
+using HabarBankAPI.Infrastructure.Share;
 using HabarBankAPI.Infrastructure.Uow;
+using HabarBankAPI.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HabarBankAPI.Web.Controllers
 {
-    [Route("api/card-types")]
+    [Route("api/{version:apiVersion}/card-types")]
     [ApiVersion("1.0")]
     [ApiController]
     public class CardTypeController : ControllerBase
     {
-        private readonly CardTypeService _service;
-
+        private readonly ICardTypeService _cardtype_service;
+        private readonly ISecurityService _security_service;
 
         public CardTypeController()
         {
@@ -33,15 +37,19 @@ namespace HabarBankAPI.Web.Controllers
 
             Mapper mapperB = AbstractMapper<CardTypeDTO, CardType>.MapperB;
 
-            _service = new CardTypeService(repository, unitOfWork, mapperA, mapperB);
+            this._cardtype_service = new CardTypeService(repository, unitOfWork, mapperA, mapperB);
+
+            this._security_service = ServiceLocator.Instance.GetService<ISecurityService>();
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CardTypeDTO>>> GetAllCardTypes()
+        public async Task<ActionResult<IEnumerable<CardTypeDTO>>> GetAllCardTypes([FromHeader] string token)
         {
             try
             {
-                IList<CardTypeDTO> cardTypes = await _service.GetAllCardTypes();
+                await this._security_service.IsExists(token);
+
+                IList<CardTypeDTO> cardTypes = await this._cardtype_service.GetAllCardTypes();
 
                 return Ok(cardTypes);
             }
@@ -53,11 +61,13 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<CardTypeDTO>> GetCardTypeById(int id)
+        public async Task<ActionResult<CardTypeDTO>> GetCardTypeById(int id, [FromHeader] string token)
         {
             try
             {
-                CardTypeDTO cardTypeDTO = await _service.GetCardTypeById(id);
+                await this._security_service.IsExists(token);
+
+                CardTypeDTO cardTypeDTO = await this._cardtype_service.GetCardTypeById(id);
 
                 return Ok(cardTypeDTO);
             }
@@ -69,15 +79,17 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<CardTypeDTO>> AddNewCardType([FromBody] CardTypeDTO cardTypeDTO)
+        public async Task<ActionResult<CardTypeDTO>> AddNewCardType([FromBody] CardTypeDTO cardTypeDTO, [FromHeader] string token)
         {
             try
             {
-                await _service.CreateNewCardType(cardTypeDTO);
+                await this._security_service.IsExists(token);
 
-                long cardTypeId = (await this._service.GetAllCardTypes()).Max(x => x.CardTypeId);
+                await _cardtype_service.CreateNewCardType(cardTypeDTO);
 
-                CardTypeDTO cardType = await this._service.GetCardTypeById(cardTypeId);
+                long cardTypeId = (await this._cardtype_service.GetAllCardTypes()).Max(x => x.CardTypeId);
+
+                CardTypeDTO cardType = await this._cardtype_service.GetCardTypeById(cardTypeId);
 
                 return cardType;
             }
@@ -89,11 +101,13 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> EditCardTypeEnabled(int id, bool enabled)
+        public async Task<ActionResult> EditCardTypeEnabled(int id, bool enabled, [FromHeader] string token)
         {
             try
             {
-                await _service.SetCardTypeEnabled(id, enabled);
+                await this._security_service.IsExists(token);
+
+                await _cardtype_service.SetCardTypeEnabled(id, enabled);
 
                 return NoContent();
             }

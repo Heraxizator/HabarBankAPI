@@ -1,4 +1,5 @@
 ﻿using HabarBankAPI.Application.DTO.Cards;
+using HabarBankAPI.Domain.Share;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HabarBankAPI.Application.Interfaces
 {
-    public interface ICardVariantService
+    public interface ICardVariantService : IAppService
     {
         public Task CreateNewCardVariant(CardVariantDTO cardVariantDTO);
         public Task<IList<CardVariantDTO>> GetAllCardVariants();

@@ -88,11 +88,10 @@ namespace HabarBankAPI.Application.Services
                 .WithCardRecipient(recipientCard)
                 .WithOperationType(operationType)
                 .WithRublesCount(sendingDTO.RublesCount)
+                .WithOperationTime(DateTime.Now)
             .Build();
 
             sending.RunSending();
-
-            senderCard.Transfers.Clear();
 
             senderCard.Transfers.Add(sending);
 
