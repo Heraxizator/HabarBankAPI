@@ -1,9 +1,10 @@
-﻿
+﻿using System.Security.Cryptography;
 using HabarBankAPI.Domain.Share;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using HabarBankAPI.Domain.Specifications.Account;
 using HabarBankAPI.Domain.Exceptions.Account;
+using System.Text;
 
 namespace HabarBankAPI.Domain.Entities
 {
@@ -63,12 +64,30 @@ namespace HabarBankAPI.Domain.Entities
                 throw new BadPatronymicException("Отчество не является реальным");
             }
 
+            password = EncryptSHA512(password);
+
             this.AccountLogin = login;
             this.AccountPassword = password;
             this.AccountPhone = phone;
             this.AccountName = name;
             this.AccountSurname = surname;
             this.AccountPatronymic = patronymic;
+        }
+
+        internal string EncryptSHA512(string login)
+        {
+            using SHA512 sha512Hash = SHA512.Create();
+
+            byte[] bytes = sha512Hash.ComputeHash(Encoding.UTF8.GetBytes(login));
+
+            StringBuilder builder = new();
+
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+
+            return builder.ToString();
         }
     }
 }

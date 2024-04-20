@@ -1,11 +1,13 @@
 
 using HabarBankAPI.Application.Interfaces;
 using HabarBankAPI.Application.Services;
+using HabarBankAPI.Data;
 using HabarBankAPI.Domain.Entities.Security;
 using HabarBankAPI.Infrastructure.Repositories;
 using HabarBankAPI.Infrastructure.Share;
 using HabarBankAPI.Infrastructure.Uow;
 using HabarBankAPI.Web.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace HabarBankAPI
 {
@@ -15,20 +17,15 @@ namespace HabarBankAPI
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             _ = builder.Services.AddControllers();
 
             builder.Services.AddApiVersioning();
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             _ = builder.Services.AddEndpointsApiExplorer();
             _ = builder.Services.AddSwaggerGen();
 
-
             WebApplication app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 _ = app.UseSwagger();

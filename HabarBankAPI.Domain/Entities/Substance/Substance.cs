@@ -15,9 +15,9 @@ namespace HabarBankAPI.Domain.Entities
         public Substance() { }
 
         public int RublesCount { get; set; }
-        public User User { get; protected set; }
+        public User? User { get; protected set; }
 
-        public ICollection<Operation> Operations { get; }
-        public ICollection<Sending> Transfers { get; }
+        public ICollection<Operation>? Operations { get; }
+        public ICollection<Sending>? Transfers { get; }
     }
 }

@@ -17,9 +17,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HabarBankAPI.Web.Controllers
 {
-    [Route("api/{version:apiVersion}/transfers/")]
-    [ApiVersion("1.0")]
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/{version:apiVersion}/transfers/")]
     public class SendingController : ControllerBase
     {
         private readonly ISendingService _sending_service;
@@ -43,86 +43,127 @@ namespace HabarBankAPI.Web.Controllers
 
             Mapper mapperB = AbstractMapper<Sending, SendingDTO>.MapperA;
 
-            this._sending_service = new SendingService(mapperA, mapperB, sendingRepositoty, cardsRepository, usersRepository, operationTypesRepository, unitOfWork);
+            _sending_service = new SendingService(mapperA, mapperB, sendingRepositoty, cardsRepository, usersRepository, operationTypesRepository, unitOfWork);
 
-            this._security_service = ServiceLocator.Instance.GetService<ISecurityService>();
+            _security_service = ServiceLocator.Instance.GetService<ISecurityService>();
         }
 
-
-        [HttpGet("{transfer-id}")]
+        [MapToApiVersion("1.0")]
+        [HttpGet("transfer-id")]
         public async Task<ActionResult<IList<SendingDTO>>> GetTransferByTransferId(long transfer_id, [FromHeader] string token)
         {
             try
             {
-                await this._security_service.IsExists(token);
+                await _security_service.IsExists(token);
 
-                SendingDTO sendingDTO = await this._sending_service.GetTransferByTransferId(transfer_id);
+                SendingDTO sendingDTO = await _sending_service.GetTransferByTransferId(transfer_id);
 
                 return Ok(sendingDTO);
             }
-            
+
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(ex.Message);
             }
         }
 
-        [HttpGet]
+        [MapToApiVersion("1.0")]
+        [HttpGet()]
         public async Task<ActionResult<IList<SendingDTO>>> GetTransfersByEntityId(long card_id, [FromHeader] string token)
         {
             try
             {
-                await this._security_service.IsExists(token);
+                await _security_service.IsExists(token);
 
-                IList<SendingDTO> sendingDTOs = await this._sending_service.GetTransfersBySubstanceId(card_id);
+                IList<SendingDTO> sendingDTOs = await _sending_service.GetTransfersBySubstanceId(card_id);
 
                 return Ok(sendingDTOs);
             }
-            
+
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(ex.Message);
             }
         }
 
+        [MapToApiVersion("2.0")]
+        [HttpGet("transfers")]
+        public async Task<ActionResult<IList<SendingDTO>>> GetTransfersByEntityId2(long card_id, [FromHeader] string token)
+        {
+            try
+            {
+                await _security_service.IsExists(token);
+
+                IList<SendingDTO> sendingDTOs = await _sending_service.GetTransfersBySubstanceId(card_id);
+
+                return Ok(sendingDTOs);
+            }
+
+            catch (Exception ex)
+            {
+                return Ok(ex.Message);
+            }
+        }
+
+        [MapToApiVersion("2.0")]
+        [HttpGet("enrollments")]
+        public async Task<ActionResult<IList<SendingDTO>>> GetEnrollmentsByEntityId(long card_id, [FromHeader] string token)
+        {
+            try
+            {
+                await _security_service.IsExists(token);
+
+                IList<SendingDTO> sendingDTOs = await _sending_service.GetEnrollmentsBySubstanceId(card_id);
+
+                return Ok(sendingDTOs);
+            }
+
+            catch (Exception ex)
+            {
+                return Ok(ex.Message);
+            }
+        }
+
+        [MapToApiVersion("1.0")]
         [HttpPost]
         public async Task<ActionResult<SendingDTO>> AddNewTransfer([FromBody] SendingDTO sendingDTO, [FromHeader] string token)
         {
             try
             {
-                await this._security_service.IsExists(token);
+                await _security_service.IsExists(token);
 
-                await this._sending_service.CreateTransfer(sendingDTO);
+                await _sending_service.CreateTransfer(sendingDTO);
 
-                long sendingId = (await this._sending_service.GetTransfersBySubstanceId(sendingDTO.SubstanceId)).Max(x => x.SendingId);
+                long sendingId = (await _sending_service.GetTransfersBySubstanceId(sendingDTO.SubstanceId)).Max(x => x.SendingId);
 
-                SendingDTO sending = await this._sending_service.GetTransferByTransferId(sendingId);
+                SendingDTO sending = await _sending_service.GetTransferByTransferId(sendingId);
 
                 return sending;
             }
 
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(ex.Message);
             }
-            
+
         }
 
+        [MapToApiVersion("1.0")]
         [HttpPut]
         public async Task<ActionResult> SetTransferEnabled(long sending_id, bool enabled, [FromHeader] string token)
         {
             try
             {
-                await this._security_service.IsExists(token);
+                await _security_service.IsExists(token);
 
-                await this._sending_service.SetTransferStatus(sending_id, enabled);
+                await _sending_service.SetTransferStatus(sending_id, enabled);
 
                 return NoContent();
             }
-           
+
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(ex.Message);
             }
         }
     }

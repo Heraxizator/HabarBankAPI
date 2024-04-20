@@ -14,6 +14,7 @@ namespace HabarBankAPI.Application.Interfaces
         public Task CreateTransfer(SendingDTO sendingDTO);
         public Task<SendingDTO> GetTransferByTransferId(long sendingId);
         public Task<IList<SendingDTO>> GetTransfersBySubstanceId(long substanceId);
+        public Task<IList<SendingDTO>> GetEnrollmentsBySubstanceId(long substanceId);
         public Task<IList<SendingDTO>> GetTransfersByUserId(long userId);
         public Task SetTransferStatus(long sendingId, bool sendingEnabled);
     }

@@ -75,7 +75,7 @@ namespace HabarBankAPI.Web.Controllers
             
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(ex.Message);
             }
         }
 
@@ -93,7 +93,7 @@ namespace HabarBankAPI.Web.Controllers
             
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(ex.Message);
             }
         }
 
@@ -115,7 +115,7 @@ namespace HabarBankAPI.Web.Controllers
             
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(ex.Message);
             }
         }
 
@@ -133,7 +133,7 @@ namespace HabarBankAPI.Web.Controllers
             
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(ex.Message);
             }
         }
     }

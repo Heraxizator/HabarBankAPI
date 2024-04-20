@@ -43,14 +43,18 @@ namespace HabarBankAPI.Domain.Factories
                 throw new AccountNotFoundException("Пользователь карты не найден");
             }
 
-            return new Card
+            Card card = new
             (
                 this.cardVariant,
                 this.rublesCount,
                 this.imagePath, 
-                this.user,
-                true
+                this.user
             );
+
+            card.SetEnabled(true);
+            card.GenerateCardNumber(16);
+
+            return card;
         }
 
         public ICardFactory WithCardUser(User? user)

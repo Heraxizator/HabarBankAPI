@@ -93,7 +93,7 @@ namespace HabarBankAPI.Application.Services
 
             sending.RunSending();
 
-            senderCard.Transfers.Add(sending);
+            senderCard.Transfers?.Add(sending);
 
             await Task.Run(() => this._cards_repository.Update(senderCard));
 
@@ -117,7 +117,20 @@ namespace HabarBankAPI.Application.Services
             IList<Sending> sendings = await Task.Run(
                 () => this._sendings_repository
                 .GetWithInclude(sending => sending.Card, sending => sending.CardSender, sending => sending.CardRecipient, sending => sending.OperationType)
-                .Where(sending => sending.Card.CardId == substanceId && sending.Enabled is true)
+                .Where(sending => sending.CardSender.CardId == substanceId && sending.Enabled is true)
+                .ToList());
+
+            IList<SendingDTO> sendingDTOs = PrepareTransferDTOs(sendings);
+
+            return sendingDTOs;
+        }
+
+        public async Task<IList<SendingDTO>> GetEnrollmentsBySubstanceId(long substanceId)
+        {
+            IList<Sending> sendings = await Task.Run(
+                () => this._sendings_repository
+                .GetWithInclude(sending => sending.Card, sending => sending.CardSender, sending => sending.CardRecipient, sending => sending.OperationType)
+                .Where(sending => sending.CardRecipient.CardId == substanceId && sending.Enabled is true)
                 .ToList());
 
             IList<SendingDTO> sendingDTOs = PrepareTransferDTOs(sendings);
