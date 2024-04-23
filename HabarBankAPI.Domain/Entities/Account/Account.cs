@@ -74,11 +74,11 @@ namespace HabarBankAPI.Domain.Entities
             this.AccountPatronymic = patronymic;
         }
 
-        internal string EncryptSHA512(string login)
+        internal string EncryptSHA512(string value)
         {
             using SHA512 sha512Hash = SHA512.Create();
 
-            byte[] bytes = sha512Hash.ComputeHash(Encoding.UTF8.GetBytes(login));
+            byte[] bytes = sha512Hash.ComputeHash(Encoding.UTF8.GetBytes(value));
 
             StringBuilder builder = new();
 

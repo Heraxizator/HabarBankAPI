@@ -52,7 +52,7 @@ namespace HabarBankAPI.Domain.Factories
             );
 
             card.SetEnabled(true);
-            card.GenerateCardNumber(16);
+            card.GenerateCardNumber("220220", 16);
 
             return card;
         }

@@ -2,6 +2,7 @@
 using HabarBankAPI.Domain.Share;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.RegularExpressions;
 
 namespace HabarBankAPI.Domain.Entities
 {
@@ -52,44 +53,36 @@ namespace HabarBankAPI.Domain.Entities
             this.RublesCount -= rublesCount;
         }
 
-        public void GenerateCardNumber(int length)
+        public void GenerateCardNumber(string prefix, int length)
         {
             Random random = new();
 
             int[] digits;
 
-            do
+            long number = random.NextInt64((long)Math.Pow(10, length - 2 - prefix.Length), (long)Math.Pow(10, length - 1 - prefix.Length) - 1);
+
+            digits = number.ToString().ToCharArray().Select(x => int.Parse(x.ToString())).ToArray();
+
+            for (int i = 0; i < digits.Length; i += 2)
             {
-                long number = random.NextInt64((long)Math.Pow(10, length - 1), (long)Math.Pow(10, length) - 1);
+                digits[i] *= 2;
 
-                digits = number.ToString().ToCharArray().Select(x => int.Parse(x.ToString())).ToArray();
-
-                for (int i = 0; i < digits.Length; i += 2)
+                if (digits[i] > 9)
                 {
-                    digits[i] *= 2;
-
-                    if (digits[i] > 9)
-                    {
-                        digits[i] -= 9;
-                    }
+                    digits[i] -= 9;
                 }
             }
 
-            while (digits.Sum() % 10 == 0);
+            string result = "220220" + string.Join(string.Empty, digits.Select(x => char.Parse(x.ToString())));
 
-            List<char> chars = digits.Select(x => char.Parse(x.ToString())).ToList();
+            int sum = result.Reverse() 
+                        .Select((d, i) => i % 2 == 0 ? Convert.ToInt32(d.ToString()) * 2 : Convert.ToInt32(d.ToString()))
+                            .Select(x => x.ToString().Select(c => Convert.ToInt32(c.ToString())).Sum()) 
+                              .Sum();
 
-            for (int i = 0; i < chars.Count; i += 5)
-            {
-                if (i == 0)
-                {
-                    continue;
-                }
+            int digit = (10 - (sum % 10)) % 10;
 
-                chars.Insert(i - 1, '-');
-            }
-
-            this.CardNumber = string.Join(string.Empty, chars);
+            this.CardNumber = Regex.Replace(result + digit, ".{4}", "$0 ").TrimEnd();
         }
     }
 }
