@@ -20,6 +20,11 @@ namespace HabarBankAPI.UnitTests.Application.Services
     {
         private ActionTypeService? _service { get; set; }
 
+        public ActionTypeServiceTests()
+        {
+            UnitService();
+        }
+
         private void UnitService()
         {
             ApplicationDbContext context = new();
@@ -40,8 +45,6 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
         public async void GetAllActionTypesTest()
         {
-            UnitService();
-
             if (this._service is null)
             {
                 return;
@@ -57,8 +60,6 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
         public async void GetActionTypeByIdTest()
         {
-            UnitService();
-
             if (this._service is null)
             {
                 return;

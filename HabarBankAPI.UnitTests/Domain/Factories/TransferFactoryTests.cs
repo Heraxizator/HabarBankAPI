@@ -89,7 +89,7 @@ public class TransferFactoryTests
 
     [Fact]
 
-    public void BuildShouldCreateIfCorrect()
+    public void BuildShouldThrowIfObjectsEmpty()
     {
         TransferFactory transferFactory = new();
 
@@ -103,6 +103,6 @@ public class TransferFactoryTests
                 .Build();
         });
 
-        Assert.True(exception is null);
+        Assert.True(exception is not null);
     }
 }

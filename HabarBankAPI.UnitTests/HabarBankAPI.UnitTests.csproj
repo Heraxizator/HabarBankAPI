@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -29,6 +29,8 @@
   <ItemGroup>
     <ProjectReference Include="..\HabarBankAPI.Application\HabarBankAPI.Application.csproj" />
     <ProjectReference Include="..\HabarBankAPI.Domain\HabarBankAPI.Domain.csproj" />
+    <ProjectReference Include="..\HabarBankAPI.Infrastructure\HabarBankAPI.Infrastructure.csproj" />
+    <ProjectReference Include="..\HabarBankAPI\HabarBankAPI.Web.csproj" />
   </ItemGroup>
 
 </Project>

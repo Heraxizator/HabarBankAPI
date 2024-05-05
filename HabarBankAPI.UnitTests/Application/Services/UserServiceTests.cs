@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using HabarBankAPI.Application.DTO.Admins;
 using HabarBankAPI.Application.DTO.Users;
 using HabarBankAPI.Application.Services;
 using HabarBankAPI.Data;
@@ -19,6 +20,11 @@ namespace HabarBankAPI.UnitTests.Application.Services
     {
         private UserService? _service { get; set; }
 
+        public UserServiceTests()
+        {
+            UnitService();
+        }
+
         internal void UnitService()
         {
             Mapper mapper = AbstractMapper<User, UserDTO>.MapperA;
@@ -34,10 +40,8 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
         [Fact]
 
-        public async void GetAllUsersTest()
+        public void GetAllUsersTest()
         {
-            UnitService();
-
             if (this._service is null)
             {
                 return;
@@ -47,5 +51,117 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
             Assert.ThrowsAny<Exception>(() => action);
         }
+
+        [Fact]
+
+        public async void CreateUserAccountTest()
+        {
+            // Arrange
+
+            if (this._service is null)
+            {
+                return;
+            }
+
+            UserDTO userDTO = new()
+            {
+                UserId = -1,
+                AccountLogin = "Test123",
+                AccountName = "Иван",
+                AccountSurname = "Иванов",
+                AccountPatronymic = "Иванович",
+                AccountPassword = "12345678",
+                AccountPhone = "+89142107904",
+                UserLevelId = 1,
+                Enabled = false
+            };
+
+            // Action
+
+            Exception exception = await Record.ExceptionAsync(async () =>
+                await this._service.CreateUserAccount(userDTO)
+            );
+
+            // Assert
+
+            Assert.True(exception is null);
+        }
+
+        [Fact]
+
+        public async void GetAuthTokenByDataTest()
+        {
+            // Arrange
+
+            if (this._service is null)
+            {
+                return;
+            }
+
+            UserDTO userDTO = new()
+            {
+                UserId = -1,
+                AccountLogin = "Test123",
+                AccountName = "Иван",
+                AccountSurname = "Иванов",
+                AccountPatronymic = "Иванович",
+                AccountPassword = "12345678",
+                AccountPhone = "+89142107904",
+                UserLevelId = 1,
+                Enabled = true
+            };
+
+            await this._service.CreateUserAccount(userDTO);
+
+            // Action
+
+            UserDTO user = await this._service.GetAuthTokenByData("Test123", "12345678");
+
+            await this._service.EditAccountEnabled(user.UserId, false);
+
+            // Assert
+
+            Assert.NotNull(user);
+        }
+
+        [Fact]
+
+        public async void EditAccoutEnabledTest()
+        {
+            // Arrange
+
+            if (this._service is null)
+            {
+                return;
+            }
+
+            UserDTO userDTO = new()
+            {
+                UserId = -1,
+                AccountLogin = "Test123",
+                AccountName = "Иван",
+                AccountSurname = "Иванов",
+                AccountPatronymic = "Иванович",
+                AccountPassword = "12345678",
+                AccountPhone = "+89142107904",
+                UserLevelId = 1,
+                Enabled = true
+            };
+
+            await this._service.CreateUserAccount(userDTO);
+
+            UserDTO user = await this._service.GetAuthTokenByData("Test123", "12345678");
+
+            // Action
+
+            Exception exception = await Record.ExceptionAsync(async () =>
+                await this._service.EditAccountEnabled(user.UserId, false)
+            );
+
+            // Assert
+
+            Assert.True(exception is null);
+        }
+
     }
 }

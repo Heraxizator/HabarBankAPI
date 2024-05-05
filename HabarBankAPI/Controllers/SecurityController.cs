@@ -30,7 +30,7 @@ namespace HabarBankAPI.Web.Controllers
         }
 
         [HttpGet("email")]
-        public async Task<ActionResult<IList<AccountLevelDTO>>> GetToken(string email)
+        public async Task<ActionResult<string>> GetToken(string email)
         {
             try
             {

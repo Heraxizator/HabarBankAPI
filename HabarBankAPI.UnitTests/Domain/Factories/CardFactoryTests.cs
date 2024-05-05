@@ -55,7 +55,7 @@ namespace HabarBankAPI.UnitTests.Domain.Factories
 
         [Fact]
 
-        public void BuildShouldThrowIfRublesCountIsNull()
+        public void BuildShouldNotThrowIfRublesCountIsNull()
         {
             CardFactory cardFactory = new();
 
@@ -66,7 +66,7 @@ namespace HabarBankAPI.UnitTests.Domain.Factories
                 .WithRublesCount(0)
                 .Build());
 
-            Assert.True(exception is not null);
+            Assert.True(exception is null);
         }
 
         [Fact]

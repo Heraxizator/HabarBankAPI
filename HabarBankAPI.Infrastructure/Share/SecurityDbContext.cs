@@ -16,8 +16,7 @@ namespace HabarBankAPI.Infrastructure.Share
     {
         public SecurityDbContext()
         {
-            //this.Database.EnsureDeleted();
-            this.Database.EnsureCreated();
+            //this.Database.EnsureCreated();
         }
 
         #region Tables

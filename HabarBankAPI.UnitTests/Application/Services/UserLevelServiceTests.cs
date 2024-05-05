@@ -21,6 +21,11 @@ namespace HabarBankAPI.UnitTests.Application.Services
     {
         private UserLevelService? _service { get; set; }
 
+        public UserLevelServiceTests()
+        {
+            UnitService();
+        }
+
         internal void UnitService()
         {
             ApplicationDbContext context = new();
@@ -40,8 +45,6 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
         public async void GetAllUserLevelsTest()
         {
-            UnitService();
-
             if (this._service is null)
             {
                 return;

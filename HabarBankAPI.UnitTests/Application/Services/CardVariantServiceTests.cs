@@ -19,6 +19,11 @@ namespace HabarBankAPI.UnitTests.Application.Services
     {
         private CardVariantService? _service {  get; set; }
 
+        public CardVariantServiceTests() 
+        {
+            UnitService();
+        }
+
         internal void UnitService()
         {
             ApplicationDbContext context = new();
@@ -40,8 +45,6 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
         public void GetAllCardVariantsTest()
         {
-            UnitService();
-
             if (this._service is null)
             {
                 return;
@@ -56,8 +59,6 @@ namespace HabarBankAPI.UnitTests.Application.Services
 
         public async void GetCardVariantByIdTest()
         {
-            UnitService();
-
             if (this._service is null)
             {
                 return;

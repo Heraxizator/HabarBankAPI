@@ -13,7 +13,7 @@ namespace HabarBankAPI.Data
         public ApplicationDbContext()
         {
             //this.Database.EnsureDeleted();
-            this.Database.EnsureCreated();
+            //this.Database.EnsureCreated();
         }
 
         #region Tables
