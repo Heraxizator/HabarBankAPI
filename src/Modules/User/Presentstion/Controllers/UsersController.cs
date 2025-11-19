@@ -37,7 +37,7 @@ public class UsersController : BaseController
 
         IEnumerable<User> users = await _service.SelectAsync(request, cancellationTokenSource.Token);
 
-        return Success(users.Select(MUser.GetBodyWithoutPassword), "Users retrieved successfully");
+        return Success(users.Select(UserMapper.GetBodyWithoutPassword), "Users retrieved successfully");
     }
 
     [HttpPost]
@@ -58,7 +58,7 @@ public class UsersController : BaseController
             return NotFound<CreateUserResponse>();
         }
 
-        UserBodyWithotPassword userBody = MUser.GetBodyWithoutPassword(user);
+        UserBodyWithotPassword userBody = UserMapper.GetBodyWithoutPassword(user);
 
         return Success(new CreateUserResponse(
             userBody.Id, userBody.Login, userBody.Email, userBody.FirstName, userBody.MiddleName, userBody.LastName, userBody.RoleId), "User created successfully");

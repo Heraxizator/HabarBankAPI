@@ -1,17 +1,20 @@
 using Access.Application.Interfaces;
 using Access.Application.Services;
 using App.Infrastructure.Data;
-using Card.Application.Interfaces;
-using Card.Application.Services;
+using Cards.Application.Interfaces;
+using Cards.Application.Services;
 using Common.Constants;
 using Common.Filters;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Operations.Application.Interfaces;
 using Operations.Application.Services;
 using System;
 using Users.Application.Interfaces;
 using Users.Application.Services;
+using Valutas.Application.Interfaces;
+using Valutas.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +47,8 @@ builder.Services.AddScoped<Common.Abstracts.IDbContext>(provider =>
     provider.GetRequiredService<ApplicationDbContext>());
 
 // Add module services
+builder.Services.AddScoped<IValutaRateService, ValutaRateService>();
+builder.Services.AddScoped<IValutaService, ValutaService>();
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IOperationService, OperationService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -55,8 +60,10 @@ builder.Services.AddControllers(options =>
     {
         options.Filters.Add<ApiExceptionFilter>();
     })
+    .AddApplicationPart(typeof(Valutas.Application.Interfaces.IValutaRateService).Assembly)
+    .AddApplicationPart(typeof(Valutas.Application.Interfaces.IValutaService).Assembly)
     .AddApplicationPart(typeof(Users.Application.Interfaces.IUserService).Assembly)
-    .AddApplicationPart(typeof(Card.Application.Interfaces.ICardService).Assembly)
+    .AddApplicationPart(typeof(Cards.Application.Interfaces.ICardService).Assembly)
     .AddApplicationPart(typeof(Operations.Application.Interfaces.IOperationService).Assembly)
     .AddApplicationPart(typeof(Access.Application.Interfaces.IAccessService).Assembly);
 
@@ -65,6 +72,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Apply migrations automatically
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

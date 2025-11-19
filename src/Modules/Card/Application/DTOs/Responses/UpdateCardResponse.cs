@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Card.Application.DTOs.Responses;
+namespace Cards.Application.DTOs.Responses;
 
 public class UpdateCardResponse : IResponse
 {

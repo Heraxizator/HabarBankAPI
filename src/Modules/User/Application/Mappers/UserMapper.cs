@@ -8,7 +8,7 @@ using Users.Domain.Entities;
 
 namespace Users.Application.Mappers;
 
-public static class MUser
+public static class UserMapper
 {
     public static User GetModelWithoutPassword(UserBodyWithotPassword body)
     {

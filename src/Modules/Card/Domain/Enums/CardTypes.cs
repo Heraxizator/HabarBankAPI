@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Card.Domain.Enums;
+namespace Cards.Domain.Enums;
 
 public enum CardTypes
 {

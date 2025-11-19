@@ -65,6 +65,6 @@ public sealed class AccessService(IDbContext context) : IAccessService
 
         ArgumentNullException.ThrowIfNull(user);
 
-        return MUser.GetBodyWithoutPassword(user);
+        return UserMapper.GetBodyWithoutPassword(user);
     }
 }

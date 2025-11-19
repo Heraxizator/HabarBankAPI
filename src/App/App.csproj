@@ -29,6 +29,7 @@
     <ProjectReference Include="..\Modules\Card\Cards.csproj" />
     <ProjectReference Include="..\Modules\Operation\Operations.csproj" />
     <ProjectReference Include="..\Modules\User\Users.csproj" />
+    <ProjectReference Include="..\Modules\Valuta\Valutas.csproj" />
   </ItemGroup>
 
 </Project>

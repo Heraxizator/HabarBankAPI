@@ -1,4 +1,5 @@
 ﻿using Common.Abstracts;
+using Common.Exceptions;
 using Common.Extensions;
 using Common.Infrastructure.Abstracts;
 using Common.Infrastructure.Repositories;
@@ -13,6 +14,7 @@ using Users.Application.DTOs.Requests;
 using Users.Application.Interfaces;
 using Users.Application.Mappers;
 using Users.Domain.Entities;
+using Users.Domain.Enums;
 
 namespace Users.Application.Services;
 
@@ -22,7 +24,12 @@ public class UserService(IDbContext context) : IUserService
 
     public async Task<User?> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken)
     {
-        User user = MUser.GetModelWithPassword(request.Body);
+        if (request.Body.RoleId > (int)Enum.GetValues(typeof(UserRoles)).Cast<UserRoles>().Last())
+        {
+            throw new DomainException("Указанный RoleId не существует");
+        }
+
+        User user = UserMapper.GetModelWithPassword(request.Body);
 
         user.Password = EncryptExtension.EncryptSHA1(user.Password!);
 
@@ -45,7 +52,7 @@ public class UserService(IDbContext context) : IUserService
 
     public async Task UpdateAsync(UpdateUserRequest request, CancellationToken cancellationToken)
     {
-        User user = MUser.GetModelWithoutPassword(request.Body);
+        User user = UserMapper.GetModelWithoutPassword(request.Body);
 
         await _repository.UpdateAsync(user, cancellationToken);
     }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Card.Application.DTOs.Requests;
+namespace Cards.Application.DTOs.Requests;
 
 public class DeleteCardRequest(long id) : BaseRequest
 {

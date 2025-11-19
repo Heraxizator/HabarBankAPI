@@ -1,0 +1,13 @@
+﻿using Common.Abstracts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Valutas.Application.DTOs.Requests;
+
+public class DeleteValutaRequest(long id) : BaseRequest
+{
+    public long Id { get; set; } = id;
+}

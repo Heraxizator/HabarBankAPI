@@ -5,9 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Card.Application.DTOs.Requests;
+namespace Valutas.Application.DTOs.Responses;
 
-public class GetCardRequest(long id) : BaseRequest
+public class UpdateValutaResponse : IResponse
 {
-    public long Id { get; set; } = id;
 }

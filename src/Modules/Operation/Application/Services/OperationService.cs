@@ -1,9 +1,10 @@
-﻿using Card.Application.DTOs.Base;
-using Card.Application.DTOs.Requests;
-using Card.Application.Interfaces;
-using Card.Application.Mappers;
-using Card.Domain.Entities;
+﻿using Cards.Application.DTOs.Base;
+using Cards.Application.DTOs.Requests;
+using Cards.Application.Interfaces;
+using Cards.Application.Mappers;
+using Cards.Domain.Entities;
 using Common.Abstracts;
+using Common.Exceptions;
 using Common.Infrastructure.Abstracts;
 using Common.Infrastructure.Repositories;
 using Operations.Application.DTOs.Base;
@@ -28,11 +29,16 @@ public sealed class OperationService(IDbContext context, ICardService service) :
     {
         Operation operation = OperationMapper.GetModel(request.Body);
         
-        Card.Domain.Entities.Card? cardRecipient = await _service.GetAsync(new GetCardRequest(operation.CardRecipientId), cancellationToken);
-        Card.Domain.Entities.Card? cardSender = await _service.GetAsync(new GetCardRequest(operation.CardSenderId), cancellationToken);
+        Card? cardRecipient = await _service.GetAsync(operation.CardRecipientId, cancellationToken);
+        Card? cardSender = await _service.GetAsync(operation.CardSenderId, cancellationToken);
 
         ArgumentNullException.ThrowIfNull(cardRecipient);
         ArgumentNullException.ThrowIfNull(cardSender);
+
+        if (cardRecipient.ValutaId != cardSender.ValutaId)
+        {
+            throw new DomainException("Карты поддерживают разные валюты");
+        }
 
         cardRecipient.Score += operation.Score;
         cardSender.Score -= operation.Score;
@@ -52,8 +58,8 @@ public sealed class OperationService(IDbContext context, ICardService service) :
 
         ArgumentNullException.ThrowIfNull(operation);
 
-        Card.Domain.Entities.Card? cardRecipient = await _service.GetAsync(new GetCardRequest(operation.CardRecipientId), cancellationToken);
-        Card.Domain.Entities.Card? cardSender = await _service.GetAsync(new GetCardRequest(operation.CardSenderId), cancellationToken);
+        Card? cardRecipient = await _service.GetAsync(operation.CardRecipientId, cancellationToken);
+        Card? cardSender = await _service.GetAsync(operation.CardSenderId, cancellationToken);
 
         ArgumentNullException.ThrowIfNull(cardRecipient);
         ArgumentNullException.ThrowIfNull(cardSender);

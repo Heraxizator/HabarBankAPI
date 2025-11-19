@@ -1,19 +1,21 @@
-﻿using Card.Application.DTOs.Base;
+﻿using Cards.Application.DTOs.Base;
+using Cards.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Card.Application.Mappers;
+namespace Cards.Application.Mappers;
 
 public static class CardMapper
 {
-    public static Domain.Entities.Card GetModel(CardBody body)
+    public static Card GetModel(CardBody body)
     {
-        return new Domain.Entities.Card
+        return new Card
         {
             Id = body.Id,
+            ValutaId = body.ValutaId,
             Number = body.Number,
             Code = body.Code,
             Score = body.RublesCount,
@@ -23,11 +25,12 @@ public static class CardMapper
         };
     }
 
-    public static CardBody GetBody(Domain.Entities.Card model)
+    public static CardBody GetBody(Card model)
     {
         return new CardBody
         {
             Id = model.Id,
+            ValutaId = model.ValutaId,
             Number = model.Number,
             Code = model.Code,
             RublesCount = model.Score,

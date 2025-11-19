@@ -1,8 +1,9 @@
-﻿using Card.Application.DTOs.Base;
-using Card.Application.DTOs.Requests;
-using Card.Application.DTOs.Responses;
-using Card.Application.Interfaces;
-using Card.Application.Mappers;
+﻿using Cards.Application.DTOs.Base;
+using Cards.Application.DTOs.Requests;
+using Cards.Application.DTOs.Responses;
+using Cards.Application.Interfaces;
+using Cards.Application.Mappers;
+using Cards.Domain.Entities;
 using Common.Abstracts;
 using Common.Constants;
 using Common.DTOs;
@@ -23,25 +24,20 @@ public class CardsController : BaseController
     }
 
     [HttpGet]
-    [SwaggerResponse(200, "Список карт", typeof(CardBody))]
+    [SwaggerResponse(200, "Список карт", typeof(IEnumerable<CardBody>))]
     [SwaggerResponse(400, "Ошибка валидации")]
-    public async Task<ActionResult<ApiResponse<CardBody>>> GetAsync(long id)
+    public async Task<ActionResult<ApiResponse<IEnumerable<CardBody>>>> GetAsync(long userId)
     {
         using CancellationTokenSource cancellationTokenSource = new(Constants.BaseTimeout);
 
-        GetCardRequest request = new(id);
+        GetCardsRequest request = new(userId);
 
-        if (!ValidateRequest<GetCardRequest, CardBody>(request, out var validationError))
+        if (!ValidateRequest<GetCardsRequest, IEnumerable<CardBody>>(request, out var validationError))
             return validationError!;
 
-        Card.Domain.Entities.Card? card = await _service.GetAsync(request, cancellationTokenSource.Token);
+        IEnumerable<Card> cards = await _service.GetAsync(request, cancellationTokenSource.Token);
 
-        if (card is null)
-        {
-            return NotFound<CardBody>();
-        }
-
-        return Success(CardMapper.GetBody(card), "Cards retrieved successfully");
+        return Success(cards.Select(CardMapper.GetBody), "Cards retrieved successfully");
     }
 
     [HttpPost]
@@ -55,7 +51,7 @@ public class CardsController : BaseController
         if (!ValidateRequest<CreateCardRequest, CreateCardResponse>(request, out var validationError))
             return validationError!;
 
-        Card.Domain.Entities.Card? card = await _service.CreateAsync(request, cancellationTokenSource.Token);
+        Card? card = await _service.CreateAsync(request, cancellationTokenSource.Token);
 
         if (card is null)
         {

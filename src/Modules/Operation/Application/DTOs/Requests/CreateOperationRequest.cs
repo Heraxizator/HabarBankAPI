@@ -8,11 +8,7 @@ using System.Threading.Tasks;
 
 namespace Operations.Application.DTOs.Requests;
 
-public class CreateOperationRequest(long id, long cardRecipientId, long cardSenderId, long score, DateTime dateTime) : BaseRequest
+public class CreateOperationRequest(OperationBody body) : BaseRequest
 {
-    public long Id { get; set; } = id;
-    public long CardRecipientId { get; set; } = cardRecipientId;
-    public long CardSenderId { get; set; } = cardSenderId;
-    public long Score { get; set; } = score;
-    public DateTime DateTime { get; set; } = dateTime;
+    public OperationBody Body { get; set; } = body;
 }
